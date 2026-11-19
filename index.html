@@ -1,18 +1,169 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d3445"><title>تحقّق | درع المجتمع الرقمي</title><style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;color:#173340;background:#f1f6f7}*{box-sizing:border-box}body{margin:0}main{max-width:880px;margin:auto;padding:18px 14px 60px}header{background:linear-gradient(135deg,#103b4c,#086e70);color:#fff;border-radius:22px;padding:26px 22px}header h1{font-size:32px;margin:0 0 7px}header p{margin:5px 0}.eyebrow{font-size:12px;opacity:.9}.tag{display:inline-block;background:#ffffff25;padding:7px 11px;border-radius:100px;font-size:12px;margin-top:12px}.card{background:white;border:1px solid #dce8ea;border-radius:18px;padding:19px;margin-top:15px;box-shadow:0 4px 20px #0b36400b}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:17px 0 7px}.muted{color:#536d78;font-size:13px;line-height:1.7}button,.filebtn{appearance:none;border:0;background:#007b80;color:white;border-radius:12px;padding:13px 16px;font-size:15px;font-weight:700;cursor:pointer;margin:4px 0}button.secondary{background:#e5f1f2;color:#14515b}button:disabled{opacity:.5;cursor:wait}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}textarea{display:block;width:100%;min-height:138px;resize:vertical;border:1px solid #b5cdd0;border-radius:12px;padding:13px;font:inherit;line-height:1.8}input[type=file]{width:100%;padding:12px;border:1px dashed #86aab0;border-radius:12px;background:#f5f9fa;font:inherit}#preview{display:none;max-height:360px;width:100%;object-fit:contain;margin-top:13px;border-radius:12px;background:#f3f6f7}.status{background:#eaf3f5;border-radius:12px;padding:12px;margin-top:12px;font-size:14px;line-height:1.7}.status.error{background:#fff0e8;color:#8b330b}.status.ok{background:#e6f5ed;color:#18543a}.hidden{display:none!important}.risk{padding:18px;border-radius:14px;border-right:6px solid}.risk.high{background:#ffeded;border-color:#c6373c}.risk.medium{background:#fff2dc;border-color:#c98215}.risk.unknown{background:#edf2f5;border-color:#718793}.risk h3{margin:0 0 6px}.risk p{margin:0}.listitem{padding:11px 0;border-bottom:1px solid #e8eff0;line-height:1.7;overflow-wrap:anywhere}.listitem:last-child{border:0}.notice{background:#f3f7f8;border-radius:12px;padding:14px;line-height:1.7}.warning{background:#fff3de;border-radius:12px;padding:14px;line-height:1.7}code{direction:ltr;unicode-bidi:plaintext;display:inline-block;font-size:13px}small{color:#5b737b}details{margin-top:13px;border-radius:12px;background:#f3f7f8;padding:12px}summary{font-weight:700;cursor:pointer}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mini{background:#f3f8f9;padding:12px;border-radius:12px;font-size:13px;line-height:1.6}.mini strong{display:block;font-size:14px;margin-bottom:4px}.fine{font-size:12px;color:#56707a;line-height:1.8}#ocrProgress{width:100%;height:8px;accent-color:#007b80;display:none}a{color:#00767a}#result{scroll-margin-top:14px}@media(max-width:570px){.grid{grid-template-columns:1fr}header h1{font-size:28px}main{padding:10px 10px 50px}.card{padding:15px}}
-</style></head><body><main><header><h1>تحقّق <span aria-hidden="true">🛡️</span></h1><p>درع المجتمع الرقمي</p><p>افحص الرسالة أو الإعلان قبل أن تثق به.</p><div class="tag">نموذج تجريبي مستقل للمسابقة • ليس خدمة رسمية لشرطة أبوظبي</div></header>
-<section class="card"><h2>١. افحص صورة من هاتفك</h2><p class="muted">ارفع لقطة شاشة من واتساب أو إنستغرام أو أي تطبيق. قراءة النص تتم داخل المتصفح باستخدام محرك OCR يُحمّل عند الطلب. لا تُرسل الصورة إلى خادم تابع لهذا النموذج.</p><input id="file" type="file" accept="image/png,image/jpeg,image/webp,image/*" aria-label="اختر صورة"><img id="preview" alt="معاينة الصورة المختارة"><div class="buttons"><button id="ocr">استخراج النص من الصورة</button><button class="secondary" id="demoFraud">تجربة رسالة واتساب مشبوهة</button><button class="secondary" id="demoOtp">تجربة سرقة رمز تحقق</button><button class="secondary" id="demoNormal">تجربة رسالة عادية</button></div><progress id="ocrProgress" max="100" value="0"></progress><div id="status" class="status" role="status" aria-live="polite">جاهز. اختر صورة، أو جرّب أحد الأمثلة.</div></section>
-<section class="card"><h2>٢. راجع النص قبل الفحص</h2><p class="muted">راجع النص المستخرج وصحح أخطاء القراءة إن وجدت. لا يمكن تقييم صورة لم تُقرأ بنجاح.</p><textarea id="content" placeholder="سيظهر النص المستخرج هنا. يمكنك أيضاً لصق رسالة أو رابط مباشرة." aria-label="النص المراد فحصه"></textarea><div class="buttons"><button id="scan">تحليل الرسالة</button><button id="clear" class="secondary">بدء فحص جديد</button></div></section>
-<section class="card hidden" id="result" aria-live="polite"><h2>٣. نتيجة التحليل</h2><div id="verdict"></div><div class="grid" style="margin-top:12px"><div class="mini"><strong>حالة التحقق من الهوية</strong><span id="identity">غير موثقة</span></div><div class="mini"><strong>نوع النتيجة</strong><span>تقييم استرشادي، وليس حكماً قطعياً</span></div></div><h3>لماذا ظهرت هذه النتيجة؟</h3><div id="reasons"></div><h3>الروابط والأرقام المكتشفة</h3><div id="extracted"></div><h3>وسائل التواصل الرسمية الآمنة</h3><div class="warning"><strong>لم يتم العثور على جهة موثقة.</strong><p style="margin:5px 0 0">لا تعتمد على رقم أو رابط داخل الرسالة المشبوهة. ابحث عن الجهة من موقعها الرسمي المعروف مسبقاً. هذه النسخة غير مرتبطة بسجلات رسمية، ولذلك لا تخترع بيانات اتصال.</p></div><details><summary>ماذا يفحص النموذج، وماذا لا يفحص؟</summary><p class="muted">يفحص أنماطاً لغوية محددة، ويستخرج أرقاماً وروابط ظاهرة في النص. لا يفحص السمعة الحية للروابط أو الأرقام، ولا يتحقق من السجل التجاري أو ملكية الحسابات أو الشعارات. لا يمثل درجة احتمالية إحصائية للاحتيال. قد تفوته رسائل احتيالية، وقد يحذر من رسائل سليمة.</p></details></section>
-<section class="card"><h2>ميزة الآيفون المستقبلية: افحص بالنقر الثلاثي</h2><div class="grid"><div class="mini"><strong>المرحلة المقترحة</strong>النقر ثلاث مرات على ظهر الآيفون ← اختصار يلتقط الشاشة ← إرسالها إلى خدمة فحص آمنة ← إظهار النتيجة.</div><div class="mini"><strong>الحالة في هذه النسخة</strong>تصور هندسي فقط. يتطلب API وخدمة معالجة وصلاحيات مناسبة؛ غير مفعّل حالياً.</div></div></section>
-<section class="card"><h2>تعليمات العرض والخصوصية</h2><p class="muted">ابدأ بزر «تجربة رسالة واتساب مشبوهة» لإظهار التحذير، ثم جرّب «رسالة عادية» لتوضيح أن عدم وجود مؤشرات لا يعني الأمان. يمكن عرض قراءة الصور إذا توفر اتصال بالإنترنت، مع اختبار الصورة مسبقاً على نفس الجهاز والشبكة.</p><p class="fine">نسخة عرض تجريبية. لا ترفع صوراً تتضمن بيانات بنكية أو رموز دخول أو معلومات شخصية حساسة. لا تُستخدم هذه النتائج لاتخاذ قرارات أمنية نهائية أو توجيه اتهامات.</p></section></main>
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d3445">
+<title>تحقّق | درع المجتمع الرقمي</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;color:#173340;background:#f1f6f7}
+*{box-sizing:border-box}
+body{margin:0}
+main{max-width:880px;margin:auto;padding:18px 14px 60px}
+header{background:linear-gradient(135deg,#103b4c,#086e70);color:#fff;border-radius:22px;padding:26px 22px}
+header h1{font-size:32px;margin:0 0 7px}
+header p{margin:5px 0}
+.tag{display:inline-block;background:#ffffff25;padding:7px 11px;border-radius:100px;font-size:12px;margin-top:12px}
+.card{background:white;border:1px solid #dce8ea;border-radius:18px;padding:19px;margin-top:15px;box-shadow:0 4px 20px #0b36400b}
+h2{font-size:19px;margin:0 0 12px}
+h3{font-size:16px;margin:17px 0 7px}
+.muted{color:#536d78;font-size:13px;line-height:1.7}
+button{appearance:none;border:0;background:#007b80;color:white;border-radius:12px;padding:13px 16px;font-size:15px;font-weight:700;cursor:pointer;margin:4px 0}
+button.secondary{background:#e5f1f2;color:#14515b}
+button:disabled{opacity:.5;cursor:wait}
+.buttons{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}
+textarea{display:block;width:100%;min-height:138px;resize:vertical;border:1px solid #b5cdd0;border-radius:12px;padding:13px;font:inherit;line-height:1.8}
+input[type=file]{width:100%;padding:12px;border:1px dashed #86aab0;border-radius:12px;background:#f5f9fa;font:inherit}
+#preview{display:none;max-height:360px;width:100%;object-fit:contain;margin-top:13px;border-radius:12px;background:#f3f6f7}
+.status{background:#eaf3f5;border-radius:12px;padding:12px;margin-top:12px;font-size:14px;line-height:1.7}
+.status.error{background:#fff0e8;color:#8b330b}
+.status.ok{background:#e6f5ed;color:#18543a}
+.hidden{display:none!important}
+.risk{padding:18px;border-radius:14px;border-right:6px solid}
+.risk.high{background:#ffeded;border-color:#c6373c}
+.risk.medium{background:#fff2dc;border-color:#c98215}
+.risk.unknown{background:#edf2f5;border-color:#718793}
+.risk h3{margin:0 0 6px}
+.risk p{margin:0}
+.listitem{padding:11px 0;border-bottom:1px solid #e8eff0;line-height:1.7;overflow-wrap:anywhere}
+.listitem:last-child{border:0}
+.warning{background:#fff3de;border-radius:12px;padding:14px;line-height:1.7}
+details{margin-top:13px;border-radius:12px;background:#f3f7f8;padding:12px}
+summary{font-weight:700;cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mini{background:#f3f8f9;padding:12px;border-radius:12px;font-size:13px;line-height:1.6}
+.mini strong{display:block;font-size:14px;margin-bottom:4px}
+.fine{font-size:12px;color:#56707a;line-height:1.8}
+#ocrProgress{width:100%;height:8px;accent-color:#007b80;display:none}
+#result{scroll-margin-top:14px}
+@media(max-width:570px){
+.grid{grid-template-columns:1fr}
+header h1{font-size:28px}
+main{padding:10px 10px 50px}
+.card{padding:15px}
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>تحقّق <span aria-hidden="true">🛡️</span></h1>
+<p>درع المجتمع الرقمي</p>
+<p>افحص الرسالة أو الإعلان قبل أن تثق به.</p>
+<div class="tag">نموذج تجريبي مستقل للمسابقة • ليس خدمة رسمية لشرطة أبوظبي</div>
+</header>
+
+<section class="card">
+<h2>١. ارفع صورة وافحصها مباشرة</h2>
+<p class="muted">اختر لقطة شاشة من واتساب أو إعلان أو رسالة. اضغط «افحص الصورة» مرة واحدة؛ سيقرأ التطبيق النص ويحلله ويعرض النتيجة تلقائياً. تتم معالجة الصورة داخل متصفحك باستخدام محرك OCR يُحمّل عبر الإنترنت عند الطلب.</p>
+<input id="file" type="file" accept="image/*" aria-label="اختر صورة">
+<img id="preview" alt="معاينة الصورة المختارة">
+<div class="buttons">
+<button id="ocr">افحص الصورة</button>
+<button class="secondary" id="demoFraud">تجربة رسالة مشبوهة</button>
+<button class="secondary" id="demoOtp">تجربة سرقة رمز تحقق</button>
+<button class="secondary" id="demoNormal">تجربة رسالة عادية</button>
+</div>
+<progress id="ocrProgress" max="100" value="0"></progress>
+<div id="status" class="status" role="status" aria-live="polite">جاهز. اختر صورة واضغط «افحص الصورة».</div>
+</section>
+
+<section class="card">
+<details id="review">
+<summary>النص المستخرج (اختياري: مراجعة أو تصحيح)</summary>
+<p class="muted">يُعرض النص بعد الفحص تلقائياً. إذا أخطأت قراءة الصورة، صحّح النص ثم اضغط «إعادة تحليل النص». ويمكنك لصق رسالة مباشرة دون صورة.</p>
+<textarea id="content" placeholder="سيظهر النص المستخرج هنا، أو الصق رسالة لفحصها." aria-label="النص المراد فحصه"></textarea>
+<div class="buttons">
+<button id="scan">تحليل النص / إعادة التحليل</button>
+<button id="clear" class="secondary">بدء فحص جديد</button>
+</div>
+</details>
+<div class="buttons"><button id="clearTop" class="secondary">بدء فحص جديد</button></div>
+</section>
+
+<section class="card hidden" id="result" aria-live="polite">
+<h2>نتيجة الفحص</h2>
+<div id="verdict"></div>
+<div class="grid" style="margin-top:12px">
+<div class="mini"><strong>حالة التحقق من الهوية</strong><span id="identity">غير موثقة</span></div>
+<div class="mini"><strong>نوع النتيجة</strong><span>تقييم استرشادي، وليس حكماً قطعياً</span></div>
+</div>
+<h3>لماذا ظهرت هذه النتيجة؟</h3>
+<div id="reasons"></div>
+<h3>الروابط والأرقام المكتشفة</h3>
+<div id="extracted"></div>
+<h3>وسائل التواصل الرسمية الآمنة</h3>
+<div class="warning">
+<strong>لم يتم التحقق من جهة رسمية.</strong>
+<p style="margin:5px 0 0">لا تعتمد على رقم أو رابط داخل الرسالة المشبوهة. ابحث عن الجهة من موقعها الرسمي المعروف مسبقاً. هذه النسخة غير مرتبطة بسجلات رسمية، ولذلك لا تعرض بيانات اتصال على أنها موثقة.</p>
+</div>
+<details>
+<summary>حدود الفحص</summary>
+<p class="muted">يفحص النموذج أنماطاً لغوية محددة وروابط وأرقاماً ظاهرة. لا يتحقق من السمعة الحية للروابط أو ملكية الحسابات أو السجلات التجارية أو الشعارات. عدم ظهور مؤشرات لا يثبت الأمان، وقد يخطئ OCR في القراءة.</p>
+</details>
+</section>
+
+<section class="card">
+<h2>ميزة الآيفون المستقبلية: افحص بالنقر الثلاثي</h2>
+<div class="grid">
+<div class="mini"><strong>المرحلة المقترحة</strong>النقر ثلاث مرات على ظهر الآيفون ← اختصار يلتقط الشاشة ← إرسالها إلى خدمة فحص آمنة ← إظهار النتيجة.</div>
+<div class="mini"><strong>الحالة في هذه النسخة</strong>تصور هندسي فقط. يتطلب API وخدمة معالجة وصلاحيات مناسبة؛ غير مفعّل حالياً.</div>
+</div>
+</section>
+
+<section class="card">
+<h2>الخصوصية وطبيعة النموذج</h2>
+<p class="muted">نسخة تجريبية مستقلة، وليست نظام تحقق حكومياً أو محرك ذكاء اصطناعي متصلاً بمصادر رسمية. معالجة الصور تتم محلياً بعد تحميل مكتبات OCR؛ وقد يتطلب تحميل المحرك اتصالاً بالإنترنت.</p>
+<p class="fine">لا ترفع صوراً تتضمن بيانات بنكية أو رموز دخول أو معلومات شخصية حساسة. لا تُستخدم النتائج لاتخاذ قرارات أمنية نهائية أو توجيه اتهامات.</p>
+</section>
+</main>
+
 <script>
 'use strict';
-const el=id=>document.getElementById(id);let file=null, previewURL=null,ocrWorking=false;
-function setStatus(msg,kind=''){el('status').textContent=msg;el('status').className='status '+kind}
-function make(tag,text,cls){const n=document.createElement(tag);if(cls)n.className=cls;n.textContent=text;return n}
-function addRows(container,items,empty){container.replaceChildren();if(!items.length){container.append(make('div',empty,'muted'));return}items.forEach(s=>container.append(make('div',s,'listitem')))}
-function normalize(s){return s.replace(/[\u064B-\u065F\u0670]/g,'').replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ـ/g,'').toLowerCase()}
+
+const el=id=>document.getElementById(id);
+let file=null,previewURL=null,ocrWorking=false,ocrPromise=null;
+
+function setStatus(msg,kind=''){
+ el('status').textContent=msg;
+ el('status').className='status '+kind;
+}
+
+function make(tag,text,cls){
+ const n=document.createElement(tag);
+ if(cls)n.className=cls;
+ n.textContent=text;
+ return n;
+}
+
+function addRows(container,items,empty){
+ container.replaceChildren();
+ if(!items.length){
+  container.append(make('div',empty,'muted'));
+  return;
+ }
+ items.forEach(s=>container.append(make('div',s,'listitem')));
+}
+
+function normalize(s){
+ return s.replace(/[\u064B-\u065F\u0670]/g,'')
+ .replace(/[إأآ]/g,'ا')
+ .replace(/ى/g,'ي')
+ .replace(/ـ/g,'')
+ .toLowerCase();
+}
+
 const rules=[
  {re:/(?:otp|one[ -]?time password|رمز.{0,12}(?:تحقق|تاكيد|سري)|كود.{0,10}تحقق)/i,weight:3,reason:'ذِكر رمز تحقق أو رمز سري؛ لا تشارك هذه الرموز.'},
  {re:/(?:ارسل|اعطني|شارك|زودني|send|share).{0,38}(?:رمز|كود|otp|code)/i,weight:4,reason:'طلب مشاركة رمز أو معلومة حساسة.'},
@@ -23,14 +174,246 @@ const rules=[
  {re:/(?:tiktok|تيك\s*توك|واتساب|whatsapp|انستغرام|instagram)/i,weight:1,reason:'ذكر منصة أو علامة تجارية لا يثبت ارتباط المرسل بها.'},
  {re:/(?:اضغط|انقر|افتح).{0,24}(?:رابط|لينك|هنا)/i,weight:1,reason:'دعوة لفتح رابط؛ افحص الوجهة من مصدر مستقل.'}
 ];
-function extract(t){const urls=[...new Set((t.match(/(?:https?:\/\/|www\.)[^\s<>"'،؛]+|\b[a-z\d-]+\.(?:com|net|org|ae|app|info|co|io|gov\.ae)\b[^\s<>"'،؛]*/gi)||[]).map(s=>s.replace(/[.,!?]+$/,'')))];const phones=[...new Set((t.match(/(?:\+|00)?\d[\d\s()\-]{7,}\d/g)||[]).map(s=>s.trim()).filter(s=>s.replace(/\D/g,'').length>=9))];return {urls,phones}}
-function analyze(raw){const t=normalize(raw),hit=rules.filter(r=>r.re.test(t));const data=extract(raw);let weight=hit.reduce((n,r)=>n+r.weight,0);const reasons=hit.map(r=>r.reason);if(data.urls.length){weight+=1;reasons.push('تحتوي الرسالة على رابط لم يتم التحقق من وجهته أو ملكيته.')}if(data.phones.length){reasons.push('وجود رقم هاتف لا يثبت هوية صاحبه أو علاقته بالجهة المعلنة.')}if(/\+962|00962/.test(raw)&&/(?:tiktok|تيك\s*توك|شحن|باقات)/i.test(t)){weight+=2;reasons.push('الرسالة الترويجية تستخدم رقماً دولياً مع هوية تجارية غير مثبتة؛ هذا مؤشر يستلزم التحقق وليس دليلاً مستقلاً على الاحتيال.')}let level='unknown',title='هوية المرسل غير موثقة — تعذّر الجزم';if(weight>=4){level='high';title='تحذير: مؤشرات اشتباه متعددة'}else if(weight>=1){level='medium';title='يحتاج إلى تحقق إضافي'}if(!hit.length&&!data.urls.length){reasons.push('لم ترصد القواعد الحالية مؤشرات كافية. هذا لا يعني أن الرسالة آمنة.')}reasons.push('لم يتم التحقق من هوية المرسل أو ملكية الرقم أو ترخيص الجهة عبر مصدر رسمي.');return {level,title,reasons,...data}}
-function renderResult(a){const v=el('verdict');v.replaceChildren();const box=make('div','','risk '+a.level);box.append(make('h3',a.title));box.append(make('p',a.level==='high'?'لا تتفاعل مع العرض أو ترسل بيانات أو أموالاً قبل تحقق مستقل.':'لا تعتمد على الرسالة وحدها لإثبات هوية الجهة.'));v.append(box);el('identity').textContent='غير موثقة — لا يوجد اتصال بسجل رسمي';addRows(el('reasons'),a.reasons,'لا توجد أسباب');const ex=el('extracted');ex.replaceChildren();ex.append(make('strong','الروابط:'));addRows(ex,a.urls,'لم يُكتشف رابط ظاهر.');ex.append(make('strong','أرقام الهاتف:'));a.phones.length?a.phones.forEach(s=>ex.append(make('div',s,'listitem'))):ex.append(make('div','لم يُكتشف رقم واضح.','muted'));el('result').classList.remove('hidden');el('result').scrollIntoView({behavior:'smooth',block:'start'})}
-function scan(){const raw=el('content').value.trim();if(!raw){el('result').classList.add('hidden');setStatus('لا يوجد نص للفحص. اختر صورة واستخرج النص، أو الصق الرسالة أولاً.','error');return}renderResult(analyze(raw));setStatus('اكتمل التحليل الاسترشادي. راجع الأسباب وحالة التحقق من الهوية.','ok')}
+
+function extract(t){
+ const urls=[...new Set(
+  (t.match(/(?:https?:\/\/|www\.)[^\s<>"'،؛]+|\b[a-z\d-]+\.(?:com|net|org|ae|app|info|co|io|gov\.ae)\b[^\s<>"'،؛]*/gi)||[])
+  .map(s=>s.replace(/[.,!?]+$/,''))
+ )];
+ const phones=[...new Set(
+  (t.match(/(?:\+|00)?\d[\d\s()\-]{7,}\d/g)||[])
+  .map(s=>s.trim())
+  .filter(s=>s.replace(/\D/g,'').length>=9)
+ )];
+ return {urls,phones};
+}
+
+function analyze(raw){
+ const t=normalize(raw);
+ const hit=rules.filter(r=>r.re.test(t));
+ const data=extract(raw);
+ let weight=hit.reduce((n,r)=>n+r.weight,0);
+ const reasons=hit.map(r=>r.reason);
+
+ if(data.urls.length){
+  weight+=1;
+  reasons.push('تحتوي الرسالة على رابط لم يتم التحقق من وجهته أو ملكيته.');
+ }
+
+ if(data.phones.length){
+  reasons.push('وجود رقم هاتف لا يثبت هوية صاحبه أو علاقته بالجهة المعلنة.');
+ }
+
+ if(/\+962|00962/.test(raw)&&/(?:tiktok|تيك\s*توك|شحن|باقات)/i.test(t)){
+  weight+=2;
+  reasons.push('الرسالة الترويجية تستخدم رقماً دولياً مع هوية تجارية غير مثبتة؛ هذا مؤشر يستلزم التحقق وليس دليلاً مستقلاً على الاحتيال.');
+ }
+
+ let level='unknown',title='هوية المرسل غير موثقة — تعذّر الجزم';
+
+ if(weight>=4){
+  level='high';
+  title='تحذير: مؤشرات اشتباه متعددة';
+ }else if(weight>=1){
+  level='medium';
+  title='يحتاج إلى تحقق إضافي';
+ }
+
+ if(!hit.length&&!data.urls.length){
+  reasons.push('لم ترصد القواعد الحالية مؤشرات كافية. هذا لا يعني أن الرسالة آمنة.');
+ }
+
+ reasons.push('لم يتم التحقق من هوية المرسل أو ملكية الرقم أو ترخيص الجهة عبر مصدر رسمي.');
+
+ return {level,title,reasons,...data};
+}
+
+function renderResult(a){
+ const v=el('verdict');
+ v.replaceChildren();
+
+ const box=make('div','','risk '+a.level);
+ box.append(make('h3',a.title));
+ box.append(make('p',a.level==='high'
+  ?'لا تتفاعل مع العرض أو ترسل بيانات أو أموالاً قبل تحقق مستقل.'
+  :'لا تعتمد على الرسالة وحدها لإثبات هوية الجهة.'
+ ));
+ v.append(box);
+
+ el('identity').textContent='غير موثقة — لا يوجد اتصال بسجل رسمي';
+ addRows(el('reasons'),a.reasons,'لا توجد أسباب');
+
+ const ex=el('extracted');
+ ex.replaceChildren();
+ ex.append(make('strong','الروابط:'));
+
+ const u=make('div','');
+ addRows(u,a.urls,'لم يُكتشف رابط ظاهر.');
+ ex.append(u);
+
+ ex.append(make('strong','أرقام الهاتف:'));
+ const p=make('div','');
+ addRows(p,a.phones,'لم يُكتشف رقم واضح.');
+ ex.append(p);
+
+ el('result').classList.remove('hidden');
+ el('result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function scan(){
+ const raw=el('content').value.trim();
+
+ if(!raw){
+  el('result').classList.add('hidden');
+  setStatus('لا يوجد نص للفحص. اختر صورة واضغط «افحص الصورة»، أو الصق رسالة.','error');
+  return;
+ }
+
+ renderResult(analyze(raw));
+ setStatus('اكتمل الفحص الاسترشادي. يمكنك مراجعة النص المستخرج من القسم الاختياري.','ok');
+}
+
 el('scan').addEventListener('click',scan);
-el('file').addEventListener('change',e=>{file=e.target.files?.[0]||null;if(previewURL)URL.revokeObjectURL(previewURL);el('result').classList.add('hidden');if(!file){el('preview').style.display='none';return}if(!file.type.startsWith('image/')){file=null;setStatus('اختر ملف صورة صالحاً.','error');return}previewURL=URL.createObjectURL(file);el('preview').src=previewURL;el('preview').style.display='block';setStatus('تم اختيار الصورة. اضغط «استخراج النص من الصورة».')});
-async function loadOCR(){if(window.Tesseract)return;if(document.querySelector('script[data-ocr]'))throw Error('لم يكتمل تحميل المحرك؛ أعد فتح الصفحة وحاول مجدداً.');await new Promise((resolve,reject)=>{const s=document.createElement('script');s.dataset.ocr='1';s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';s.onload=resolve;s.onerror=()=>reject(Error('تعذر تحميل محرك OCR؛ تأكد من الاتصال بالإنترنت.'));document.head.append(s)})}
-el('ocr').addEventListener('click',async()=>{if(ocrWorking)return;if(!file){setStatus('اختر صورة أولاً.','error');return}ocrWorking=true;el('ocr').disabled=true;el('result').classList.add('hidden');el('ocrProgress').style.display='block';el('ocrProgress').value=0;try{setStatus('جارٍ تحميل محرك قراءة الصور...');await loadOCR();setStatus('جارٍ قراءة النص العربي والإنجليزي؛ انتظر حتى يكتمل الفحص.');const out=await Tesseract.recognize(file,'ara+eng',{logger:m=>{if(m.status==='recognizing text'){const p=Math.round((m.progress||0)*100);el('ocrProgress').value=p;setStatus('استخراج النص: '+p+'٪')}}});const txt=(out.data?.text||'').trim();if(!txt){el('content').value='';setStatus('تعذر استخراج نص واضح؛ لم يتم تحليل الصورة. حاول بصورة أوضح أو أدخل النص يدوياً.','error');return}el('content').value=txt;setStatus('تم استخراج '+txt.length+' حرفاً. راجع النص ثم اضغط «تحليل الرسالة».','ok')}catch(err){el('content').value='';setStatus('فشلت قراءة الصورة، ولم تُصدر نتيجة أمنية: '+(err?.message||'خطأ غير معروف')+' يمكنك إدخال النص يدوياً.','error')}finally{ocrWorking=false;el('ocr').disabled=false;el('ocrProgress').style.display='none'}});
-const examples={demoFraud:'السلام عليكم. كل عام وانتم بخير. بمناسبة عيد الأضحى المبارك توفرت عروض على الباقات الشحن بأسعار خرافية. سارع في الشحن! الرقم +962 7 8238 2451. شعار TikTok',demoOtp:'تنبيه عاجل! حسابك سيتم إيقافه خلال ساعة. أرسل رمز OTP الآن لتجنب الحظر، وادفع رسوم التفعيل عبر https://verify-account.example/login',demoNormal:'مرحباً، تم تأكيد موعدك غداً الساعة العاشرة صباحاً. شكراً لتواصلك معنا.'};Object.entries(examples).forEach(([id,t])=>el(id).addEventListener('click',()=>{el('content').value=t;scan()}));
-el('clear').addEventListener('click',()=>{el('content').value='';el('file').value='';file=null;if(previewURL){URL.revokeObjectURL(previewURL);previewURL=null}el('preview').removeAttribute('src');el('preview').style.display='none';el('result').classList.add('hidden');setStatus('جاهز لفحص جديد.')});
-</script></body></html>
+
+el('file').addEventListener('change',e=>{
+ file=e.target.files?.[0]||null;
+
+ if(previewURL){
+  URL.revokeObjectURL(previewURL);
+  previewURL=null;
+ }
+
+ el('result').classList.add('hidden');
+ el('content').value='';
+
+ if(!file){
+  el('preview').style.display='none';
+  setStatus('اختر صورة واضغط «افحص الصورة».');
+  return;
+ }
+
+ if(!file.type.startsWith('image/')){
+  file=null;
+  setStatus('اختر ملف صورة صالحاً.','error');
+  return;
+ }
+
+ previewURL=URL.createObjectURL(file);
+ el('preview').src=previewURL;
+ el('preview').style.display='block';
+ setStatus('تم اختيار الصورة. اضغط «افحص الصورة» مرة واحدة.');
+});
+
+async function loadOCR(){
+ if(window.Tesseract)return window.Tesseract;
+ if(ocrPromise)return ocrPromise;
+
+ ocrPromise=new Promise((resolve,reject)=>{
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  s.onload=()=>window.Tesseract
+   ?resolve(window.Tesseract)
+   :reject(Error('لم يتوفر محرك OCR بعد التحميل.'));
+  s.onerror=()=>reject(Error('تعذر تحميل محرك OCR؛ تأكد من الاتصال بالإنترنت.'));
+  document.head.append(s);
+ }).catch(err=>{
+  ocrPromise=null;
+  throw err;
+ });
+
+ return ocrPromise;
+}
+
+el('ocr').addEventListener('click',async()=>{
+ if(ocrWorking)return;
+
+ if(!file){
+  setStatus('اختر صورة أولاً.','error');
+  return;
+ }
+
+ ocrWorking=true;
+ const currentFile=file;
+ el('ocr').disabled=true;
+ el('result').classList.add('hidden');
+ el('ocrProgress').style.display='block';
+ el('ocrProgress').value=0;
+
+ try{
+  setStatus('جارٍ تحميل محرك قراءة الصور...');
+  const OCR=await loadOCR();
+
+  setStatus('جارٍ استخراج النص وتحليله تلقائياً. قد تستغرق القراءة بعض الوقت.');
+
+  const out=await OCR.recognize(currentFile,'ara+eng',{
+   logger:m=>{
+    if(m.status==='recognizing text'){
+     const p=Math.round((m.progress||0)*100);
+     el('ocrProgress').value=p;
+     setStatus('قراءة الصورة: '+p+'٪ — سيظهر التحليل تلقائياً');
+    }
+   }
+  });
+
+  if(file!==currentFile){
+   setStatus('تغيرت الصورة أثناء الفحص؛ اضغط «افحص الصورة» للصورة الجديدة.');
+   return;
+  }
+
+  const txt=(out.data?.text||'').trim();
+
+  if(!txt||txt.replace(/\s/g,'').length<4){
+   el('content').value='';
+   setStatus('لم يُستخرج نص كافٍ من الصورة، لذلك لم يصدر تقييم. حاول بصورة أوضح أو أدخل النص يدوياً.','error');
+   return;
+  }
+
+  el('content').value=txt;
+  scan();
+
+ }catch(err){
+  el('content').value='';
+  el('result').classList.add('hidden');
+  setStatus('فشلت قراءة الصورة، ولم تُصدر نتيجة أمنية: '+(err?.message||'خطأ غير معروف')+'. يمكنك إدخال النص يدوياً.','error');
+ }finally{
+  ocrWorking=false;
+  el('ocr').disabled=false;
+  el('ocrProgress').style.display='none';
+ }
+});
+
+const examples={
+ demoFraud:'السلام عليكم. كل عام وانتم بخير. بمناسبة عيد الأضحى المبارك توفرت عروض على الباقات الشحن بأسعار خرافية. سارع في الشحن! الرقم +962 7 8238 2451. شعار TikTok',
+ demoOtp:'تنبيه عاجل! حسابك سيتم إيقافه خلال ساعة. أرسل رمز OTP الآن لتجنب الحظر، وادفع رسوم التفعيل عبر https://verify-account.example/login',
+ demoNormal:'مرحباً، تم تأكيد موعدك غداً الساعة العاشرة صباحاً. شكراً لتواصلك معنا.'
+};
+
+Object.entries(examples).forEach(([id,t])=>
+ el(id).addEventListener('click',()=>{
+  el('content').value=t;
+  el('result').classList.add('hidden');
+  scan();
+ })
+);
+
+function clearAll(){
+ el('content').value='';
+ el('file').value='';
+ file=null;
+
+ if(previewURL){
+  URL.revokeObjectURL(previewURL);
+  previewURL=null;
+ }
+
+ el('preview').removeAttribute('src');
+ el('preview').style.display='none';
+ el('result').classList.add('hidden');
+ setStatus('جاهز لفحص جديد.');
+}
+
+el('clear').addEventListener('click',clearAll);
+el('clearTop').addEventListener('click',clearAll);
+</script>
+</body>
+</html>
