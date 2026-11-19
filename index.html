@@ -101,16 +101,16 @@ main{padding:10px 10px 50px}
 </div>
 <h3>لماذا ظهرت هذه النتيجة؟</h3>
 <div id="reasons"></div>
-<h3>الروابط والأرقام المكتشفة</h3>
+<h3>فحص الروابط وأسماء النطاقات</h3>
 <div id="extracted"></div>
-<h3>وسائل التواصل الرسمية الآمنة</h3>
+<h3>التحقق المستقل من الجهة</h3>
 <div class="warning">
-<strong>لم يتم التحقق من جهة رسمية.</strong>
-<p style="margin:5px 0 0">لا تعتمد على رقم أو رابط داخل الرسالة المشبوهة. ابحث عن الجهة من موقعها الرسمي المعروف مسبقاً. هذه النسخة غير مرتبطة بسجلات رسمية، ولذلك لا تعرض بيانات اتصال على أنها موثقة.</p>
+<strong>التحقق من مرسل الرسالة غير متاح.</strong>
+<p style="margin:5px 0 0">لا تعتمد على رقم أو رابط داخل الرسالة المشبوهة. ابحث عن الجهة من موقعها الرسمي المعروف مسبقاً. يعرض التطبيق أمثلة لمواقع مرجعية معروفة فقط، ولا يتحقق من هوية المرسل أو من سمعة الروابط لحظياً.</p>
 </div>
 <details>
 <summary>حدود الفحص</summary>
-<p class="muted">يفحص النموذج أنماطاً لغوية محددة وروابط وأرقاماً ظاهرة. لا يتحقق من السمعة الحية للروابط أو ملكية الحسابات أو السجلات التجارية أو الشعارات. عدم ظهور مؤشرات لا يثبت الأمان، وقد يخطئ OCR في القراءة.</p>
+<p class="muted">يفحص النموذج أنماطاً لغوية محددة وروابط وأرقاماً ظاهرة. يفحص بنية الروابط محلياً ويقارن أسماء النطاقات بقائمة مرجعية محدودة؛ لا يتحقق من السمعة الحية للروابط أو ملكية الحسابات أو السجلات التجارية أو الشعارات. عدم ظهور مؤشرات لا يثبت الأمان، وقد يخطئ OCR في القراءة.</p>
 </details>
 </section>
 
@@ -139,14 +139,12 @@ function setStatus(msg,kind=''){
  el('status').textContent=msg;
  el('status').className='status '+kind;
 }
-
 function make(tag,text,cls){
  const n=document.createElement(tag);
  if(cls)n.className=cls;
  n.textContent=text;
  return n;
 }
-
 function addRows(container,items,empty){
  container.replaceChildren();
  if(!items.length){
@@ -155,7 +153,6 @@ function addRows(container,items,empty){
  }
  items.forEach(s=>container.append(make('div',s,'listitem')));
 }
-
 function normalize(s){
  return s.replace(/[\u064B-\u065F\u0670]/g,'')
  .replace(/[إأآ]/g,'ا')
@@ -163,6 +160,22 @@ function normalize(s){
  .replace(/ـ/g,'')
  .toLowerCase();
 }
+
+const referenceSites=[
+ {domain:"u.ae",name:"البوابة الرسمية لحكومة الإمارات"},
+ {domain:"adpolice.gov.ae",name:"شرطة أبوظبي"},
+ {domain:"moi.gov.ae",name:"وزارة الداخلية الإماراتية"}
+];
+
+const shorteners=new Set([
+ "bit.ly","tinyurl.com","t.co","is.gd",
+ "cutt.ly","rebrand.ly","shorturl.at"
+]);
+
+const impersonatedNames=[
+ "adpolice","moi","uae","police",
+ "government","gov","شرطة","حكومة"
+];
 
 const rules=[
  {re:/(?:otp|one[ -]?time password|رمز.{0,12}(?:تحقق|تاكيد|سري)|كود.{0,10}تحقق)/i,weight:3,reason:'ذِكر رمز تحقق أو رمز سري؛ لا تشارك هذه الرموز.'},
@@ -177,8 +190,8 @@ const rules=[
 
 function extract(t){
  const urls=[...new Set(
-  (t.match(/(?:https?:\/\/|www\.)[^\s<>"'،؛]+|\b[a-z\d-]+\.(?:com|net|org|ae|app|info|co|io|gov\.ae)\b[^\s<>"'،؛]*/gi)||[])
-  .map(s=>s.replace(/[.,!?]+$/,''))
+  (t.match(/(?:https?:\/\/|www\.)[^\s<>"'،؛]+|\b[a-z\d-]+(?:\.[a-z\d-]+)*\.(?:com|net|org|ae|app|info|co|io|me|ly|xyz|site|online|top|click|link|shop)\b[^\s<>"'،؛]*/gi)||[])
+  .map(s=>s.replace(/[.,!?،؛)\]]+$/,''))
  )];
  const phones=[...new Set(
   (t.match(/(?:\+|00)?\d[\d\s()\-]{7,}\d/g)||[])
@@ -188,16 +201,87 @@ function extract(t){
  return {urls,phones};
 }
 
+function checkLink(raw){
+ const notes=[];
+ let weight=0,host='',reference=null;
+
+ try{
+  const url=new URL(
+   /^https?:\/\//i.test(raw)?raw:'https://'+raw
+  );
+  host=url.hostname.toLowerCase().replace(/\.$/,'');
+
+  if(!host.includes('.'))throw Error('domain');
+
+  reference=referenceSites.find(s=>
+   host===s.domain||host.endsWith('.'+s.domain)
+  )||null;
+
+  if(url.protocol==='http:'){
+   weight+=2;
+   notes.push('الرابط يستخدم HTTP غير المشفّر.');
+  }
+
+  if(url.username||url.password||raw.includes('@')){
+   weight+=3;
+   notes.push('يحتوي الرابط على @ أو معلومات مستخدم قد تخفي الوجهة الحقيقية.');
+  }
+
+  if(/^\d{1,3}(?:\.\d{1,3}){3}$/.test(host)){
+   weight+=2;
+   notes.push('الرابط يستخدم عنوان IP بدلاً من اسم نطاق واضح.');
+  }
+
+  if(host.includes('xn--')){
+   weight+=2;
+   notes.push('اسم نطاق مرمّز (Punycode) قد يستدعي فحص تشابه الحروف.');
+  }
+
+  if(shorteners.has(host)){
+   weight+=2;
+   notes.push('رابط مختصر؛ الوجهة النهائية غير معروفة في هذا الفحص.');
+  }
+
+  if(!reference&&impersonatedNames.some(n=>host.includes(n))){
+   weight+=2;
+   notes.push('اسم النطاق يتضمن لفظاً مرتبطاً بجهة رسمية، لكنّه لا يطابق قائمة النطاقات المرجعية.');
+  }
+
+  if(!reference&&/(?:^|[.-])(login|verify|secure|account|update|otp)(?:[.-]|$)/i.test(host)){
+   weight+=1;
+   notes.push('اسم النطاق يحتوي على كلمات تستخدم أحياناً في صفحات التصيّد.');
+  }
+
+  if(reference){
+   notes.push('اسم النطاق يطابق مرجعاً محفوظاً: '+reference.name+' ('+reference.domain+'). هذا لا يثبت هوية مرسل الرسالة أو سلامة محتوى الرابط.');
+  }
+
+  if(!notes.length){
+   notes.push('لم تُكتشف علامة تقنية واضحة في بنية الرابط؛ لم يتم فحص سمعته أو محتواه.');
+  }
+
+ }catch(e){
+  weight+=2;
+  notes.push('تعذّر تفسير الرابط بصورة موثوقة؛ راجع النص المستخرج.');
+ }
+
+ return {raw,host,weight,notes,reference};
+}
+
 function analyze(raw){
  const t=normalize(raw);
  const hit=rules.filter(r=>r.re.test(t));
  const data=extract(raw);
- let weight=hit.reduce((n,r)=>n+r.weight,0);
+ const links=data.urls.map(checkLink);
+
+ let weight=
+  hit.reduce((n,r)=>n+r.weight,0)+
+  links.reduce((n,l)=>n+l.weight,0);
+
  const reasons=hit.map(r=>r.reason);
 
  if(data.urls.length){
-  weight+=1;
-  reasons.push('تحتوي الرسالة على رابط لم يتم التحقق من وجهته أو ملكيته.');
+  reasons.push('تم تحليل بنية الروابط محلياً، دون فتحها أو الاتصال بخدمة سمعة خارجية.');
  }
 
  if(data.phones.length){
@@ -206,10 +290,11 @@ function analyze(raw){
 
  if(/\+962|00962/.test(raw)&&/(?:tiktok|تيك\s*توك|شحن|باقات)/i.test(t)){
   weight+=2;
-  reasons.push('الرسالة الترويجية تستخدم رقماً دولياً مع هوية تجارية غير مثبتة؛ هذا مؤشر يستلزم التحقق وليس دليلاً مستقلاً على الاحتيال.');
+  reasons.push('الرسالة الترويجية تستخدم رقماً دولياً مع هوية تجارية غير مثبتة؛ يستلزم ذلك التحقق وليس دليلاً مستقلاً على الاحتيال.');
  }
 
- let level='unknown',title='هوية المرسل غير موثقة — تعذّر الجزم';
+ let level='unknown';
+ let title='هوية المرسل غير موثقة — تعذّر الجزم';
 
  if(weight>=4){
   level='high';
@@ -219,13 +304,13 @@ function analyze(raw){
   title='يحتاج إلى تحقق إضافي';
  }
 
- if(!hit.length&&!data.urls.length){
+ if(!hit.length&&!links.length){
   reasons.push('لم ترصد القواعد الحالية مؤشرات كافية. هذا لا يعني أن الرسالة آمنة.');
  }
 
  reasons.push('لم يتم التحقق من هوية المرسل أو ملكية الرقم أو ترخيص الجهة عبر مصدر رسمي.');
 
- return {level,title,reasons,...data};
+ return {level,title,reasons,links,...data};
 }
 
 function renderResult(a){
@@ -234,30 +319,71 @@ function renderResult(a){
 
  const box=make('div','','risk '+a.level);
  box.append(make('h3',a.title));
- box.append(make('p',a.level==='high'
-  ?'لا تتفاعل مع العرض أو ترسل بيانات أو أموالاً قبل تحقق مستقل.'
-  :'لا تعتمد على الرسالة وحدها لإثبات هوية الجهة.'
+ box.append(make('p',
+  a.level==='high'
+   ?'لا تتفاعل مع العرض أو ترسل بيانات أو أموالاً قبل تحقق مستقل.'
+   :'لا تعتمد على الرسالة وحدها لإثبات هوية الجهة.'
  ));
  v.append(box);
 
- el('identity').textContent='غير موثقة — لا يوجد اتصال بسجل رسمي';
+ el('identity').textContent=
+  'مرسل الرسالة غير موثق — لا يوجد اتصال بسجل رسمي';
+
  addRows(el('reasons'),a.reasons,'لا توجد أسباب');
 
  const ex=el('extracted');
  ex.replaceChildren();
- ex.append(make('strong','الروابط:'));
 
- const u=make('div','');
- addRows(u,a.urls,'لم يُكتشف رابط ظاهر.');
- ex.append(u);
+ if(!a.links.length){
+  ex.append(make('div','لم يُكتشف رابط ظاهر.','muted'));
+ }
 
- ex.append(make('strong','أرقام الهاتف:'));
+ a.links.forEach(l=>{
+  const card=make('div','','listitem');
+  card.append(make('strong',l.raw));
+  card.append(make('div',
+   'النطاق الفعلي: '+(l.host||'غير معروف'),'muted'
+  ));
+  card.append(make('div',
+   l.reference
+    ?'مطابقة قائمة مرجعية محدودة — ليست شهادة أمان'
+    :l.weight
+     ?'مؤشرات تقنية تستدعي الحذر'
+     :'لم تُرصد مؤشرات تقنية واضحة — غير موثق',
+   'muted'
+  ));
+  l.notes.forEach(note=>
+   card.append(make('div','• '+note,'muted'))
+  );
+  ex.append(card);
+ });
+
+ ex.append(make('h3','أرقام الهاتف:'));
  const p=make('div','');
  addRows(p,a.phones,'لم يُكتشف رقم واضح.');
  ex.append(p);
 
+ ex.append(make('h3','مواقع مرجعية للزيارة المستقلة:'));
+
+ referenceSites.forEach(site=>{
+  const line=make('div','','listitem');
+  line.append(make('span',site.name+' — '));
+
+  const a=document.createElement('a');
+  a.href='https://'+site.domain+'/';
+  a.target='_blank';
+  a.rel='noopener noreferrer';
+  a.textContent=site.domain;
+
+  line.append(a);
+  ex.append(line);
+ });
+
  el('result').classList.remove('hidden');
- el('result').scrollIntoView({behavior:'smooth',block:'start'});
+ el('result').scrollIntoView({
+  behavior:'smooth',
+  block:'start'
+ });
 }
 
 function scan(){
@@ -265,12 +391,18 @@ function scan(){
 
  if(!raw){
   el('result').classList.add('hidden');
-  setStatus('لا يوجد نص للفحص. اختر صورة واضغط «افحص الصورة»، أو الصق رسالة.','error');
+  setStatus(
+   'لا يوجد نص للفحص. اختر صورة واضغط «افحص الصورة»، أو الصق رسالة.',
+   'error'
+  );
   return;
  }
 
  renderResult(analyze(raw));
- setStatus('اكتمل الفحص الاسترشادي. يمكنك مراجعة النص المستخرج من القسم الاختياري.','ok');
+ setStatus(
+  'اكتمل الفحص الاسترشادي. يمكنك مراجعة النص المستخرج من القسم الاختياري.',
+  'ok'
+ );
 }
 
 el('scan').addEventListener('click',scan);
@@ -311,10 +443,15 @@ async function loadOCR(){
  ocrPromise=new Promise((resolve,reject)=>{
   const s=document.createElement('script');
   s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+
   s.onload=()=>window.Tesseract
    ?resolve(window.Tesseract)
    :reject(Error('لم يتوفر محرك OCR بعد التحميل.'));
-  s.onerror=()=>reject(Error('تعذر تحميل محرك OCR؛ تأكد من الاتصال بالإنترنت.'));
+
+  s.onerror=()=>reject(
+   Error('تعذر تحميل محرك OCR؛ تأكد من الاتصال بالإنترنت.')
+  );
+
   document.head.append(s);
  }).catch(err=>{
   ocrPromise=null;
@@ -334,6 +471,7 @@ el('ocr').addEventListener('click',async()=>{
 
  ocrWorking=true;
  const currentFile=file;
+
  el('ocr').disabled=true;
  el('result').classList.add('hidden');
  el('ocrProgress').style.display='block';
@@ -374,7 +512,12 @@ el('ocr').addEventListener('click',async()=>{
  }catch(err){
   el('content').value='';
   el('result').classList.add('hidden');
-  setStatus('فشلت قراءة الصورة، ولم تُصدر نتيجة أمنية: '+(err?.message||'خطأ غير معروف')+'. يمكنك إدخال النص يدوياً.','error');
+  setStatus(
+   'فشلت قراءة الصورة، ولم تُصدر نتيجة أمنية: '+
+   (err?.message||'خطأ غير معروف')+
+   '. يمكنك إدخال النص يدوياً.',
+   'error'
+  );
  }finally{
   ocrWorking=false;
   el('ocr').disabled=false;
