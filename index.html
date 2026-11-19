@@ -66,8 +66,17 @@ main{padding:10px 10px 50px}
 
 <section class="card">
 <h2>١. ارفع صورة وافحصها مباشرة</h2>
-<p class="muted">اختر لقطة شاشة من واتساب أو إعلان أو رسالة. اضغط «افحص الصورة» مرة واحدة؛ سيقرأ التطبيق النص ويحلله ويعرض النتيجة تلقائياً. تتم معالجة الصورة داخل متصفحك باستخدام محرك OCR يُحمّل عبر الإنترنت عند الطلب.</p>
-<input id="file" type="file" accept="image/*" aria-label="اختر صورة">
+<p class="muted">اختر لقطة شاشة من واتساب أو إعلان أو رسالة أو رمز QR. اضغط «افحص الصورة» مرة واحدة؛ سيقرأ التطبيق النص ويحلله ويعرض النتيجة تلقائياً. تتم معالجة الصورة داخل متصفحك باستخدام محرك OCR يُحمّل عبر الإنترنت عند الطلب.</p>
+<div class="grid">
+<div>
+<label for="camera"><strong>التقاط صورة بالكاميرا</strong></label>
+<input id="camera" type="file" accept="image/*" capture="environment" aria-label="التقاط صورة بالكاميرا الخلفية">
+</div>
+<div>
+<label for="file"><strong>اختيار صورة من المعرض</strong></label>
+<input id="file" type="file" accept="image/*" aria-label="اختيار صورة محفوظة">
+</div>
+</div>
 <img id="preview" alt="معاينة الصورة المختارة">
 <div class="buttons">
 <button id="ocr">افحص الصورة</button>
@@ -89,7 +98,9 @@ main{padding:10px 10px 50px}
 <button id="clear" class="secondary">بدء فحص جديد</button>
 </div>
 </details>
-<div class="buttons"><button id="clearTop" class="secondary">بدء فحص جديد</button></div>
+<div class="buttons">
+<button id="clearTop" class="secondary">بدء فحص جديد</button>
+</div>
 </section>
 
 <section class="card hidden" id="result" aria-live="polite">
@@ -102,6 +113,7 @@ main{padding:10px 10px 50px}
 <h3>لماذا ظهرت هذه النتيجة؟</h3>
 <div id="reasons"></div>
 <h3>فحص الروابط وأسماء النطاقات</h3>
+<div id="qrResult" class="mini hidden" style="margin-bottom:12px"></div>
 <div id="extracted"></div>
 <h3>التحقق المستقل من الجهة</h3>
 <div class="warning">
@@ -115,7 +127,7 @@ main{padding:10px 10px 50px}
 </section>
 
 <section class="card">
-<h2>ميزة الآيفون المستقبلية: افحص بالنقر الثلاثي</h2>
+<h2>ميزة مستقبلية غير مفعّلة: الفحص بالنقر الثلاثي</h2>
 <div class="grid">
 <div class="mini"><strong>المرحلة المقترحة</strong>النقر ثلاث مرات على ظهر الآيفون ← اختصار يلتقط الشاشة ← إرسالها إلى خدمة فحص آمنة ← إظهار النتيجة.</div>
 <div class="mini"><strong>الحالة في هذه النسخة</strong>تصور هندسي فقط. يتطلب API وخدمة معالجة وصلاحيات مناسبة؛ غير مفعّل حالياً.</div>
@@ -124,7 +136,7 @@ main{padding:10px 10px 50px}
 
 <section class="card">
 <h2>الخصوصية وطبيعة النموذج</h2>
-<p class="muted">نسخة تجريبية مستقلة، وليست نظام تحقق حكومياً أو محرك ذكاء اصطناعي متصلاً بمصادر رسمية. معالجة الصور تتم محلياً بعد تحميل مكتبات OCR؛ وقد يتطلب تحميل المحرك اتصالاً بالإنترنت.</p>
+<p class="muted">نسخة المسابقة التجريبية، وليست نظام تحقق حكومياً أو محرك ذكاء اصطناعي متصلاً بمصادر رسمية. معالجة الصور تتم محلياً بعد تحميل مكتبات OCR؛ وقد يتطلب تحميل المحرك اتصالاً بالإنترنت.</p>
 <p class="fine">لا ترفع صوراً تتضمن بيانات بنكية أو رموز دخول أو معلومات شخصية حساسة. لا تُستخدم النتائج لاتخاذ قرارات أمنية نهائية أو توجيه اتهامات.</p>
 </section>
 </main>
@@ -133,18 +145,20 @@ main{padding:10px 10px 50px}
 'use strict';
 
 const el=id=>document.getElementById(id);
-let file=null,previewURL=null,ocrWorking=false,ocrPromise=null;
+let file=null,previewURL=null,ocrWorking=false,ocrPromise=null,qrPromise=null,qrValues=[];
 
 function setStatus(msg,kind=''){
  el('status').textContent=msg;
  el('status').className='status '+kind;
 }
+
 function make(tag,text,cls){
  const n=document.createElement(tag);
  if(cls)n.className=cls;
  n.textContent=text;
  return n;
 }
+
 function addRows(container,items,empty){
  container.replaceChildren();
  if(!items.length){
@@ -153,6 +167,7 @@ function addRows(container,items,empty){
  }
  items.forEach(s=>container.append(make('div',s,'listitem')));
 }
+
 function normalize(s){
  return s.replace(/[\u064B-\u065F\u0670]/g,'')
  .replace(/[إأآ]/g,'ا')
@@ -193,11 +208,13 @@ function extract(t){
   (t.match(/(?:https?:\/\/|www\.)[^\s<>"'،؛]+|\b[a-z\d-]+(?:\.[a-z\d-]+)*\.(?:com|net|org|ae|app|info|co|io|me|ly|xyz|site|online|top|click|link|shop)\b[^\s<>"'،؛]*/gi)||[])
   .map(s=>s.replace(/[.,!?،؛)\]]+$/,''))
  )];
+
  const phones=[...new Set(
   (t.match(/(?:\+|00)?\d[\d\s()\-]{7,}\d/g)||[])
   .map(s=>s.trim())
   .filter(s=>s.replace(/\D/g,'').length>=9)
  )];
+
  return {urls,phones};
 }
 
@@ -209,6 +226,7 @@ function checkLink(raw){
   const url=new URL(
    /^https?:\/\//i.test(raw)?raw:'https://'+raw
   );
+
   host=url.hostname.toLowerCase().replace(/\.$/,'');
 
   if(!host.includes('.'))throw Error('domain');
@@ -314,6 +332,15 @@ function analyze(raw){
 }
 
 function renderResult(a){
+ const qrBox=el('qrResult');
+ qrBox.replaceChildren();
+ qrBox.classList.toggle('hidden',!qrValues.length);
+
+ if(qrValues.length){
+  qrBox.append(make('strong','محتوى QR المكتشف:'));
+  qrValues.forEach(v=>qrBox.append(make('div',v,'listitem')));
+ }
+
  const v=el('verdict');
  v.replaceChildren();
 
@@ -326,8 +353,7 @@ function renderResult(a){
  ));
  v.append(box);
 
- el('identity').textContent=
-  'مرسل الرسالة غير موثق — لا يوجد اتصال بسجل رسمي';
+ el('identity').textContent='مرسل الرسالة غير موثق — لا يوجد اتصال بسجل رسمي';
 
  addRows(el('reasons'),a.reasons,'لا توجد أسباب');
 
@@ -340,10 +366,9 @@ function renderResult(a){
 
  a.links.forEach(l=>{
   const card=make('div','','listitem');
+
   card.append(make('strong',l.raw));
-  card.append(make('div',
-   'النطاق الفعلي: '+(l.host||'غير معروف'),'muted'
-  ));
+  card.append(make('div','النطاق الفعلي: '+(l.host||'غير معروف'),'muted'));
   card.append(make('div',
    l.reference
     ?'مطابقة قائمة مرجعية محدودة — ليست شهادة أمان'
@@ -352,9 +377,11 @@ function renderResult(a){
      :'لم تُرصد مؤشرات تقنية واضحة — غير موثق',
    'muted'
   ));
+
   l.notes.forEach(note=>
    card.append(make('div','• '+note,'muted'))
   );
+
   ex.append(card);
  });
 
@@ -391,24 +418,21 @@ function scan(){
 
  if(!raw){
   el('result').classList.add('hidden');
-  setStatus(
-   'لا يوجد نص للفحص. اختر صورة واضغط «افحص الصورة»، أو الصق رسالة.',
-   'error'
-  );
+  setStatus('لا يوجد نص للفحص. اختر صورة واضغط «افحص الصورة»، أو الصق رسالة.','error');
   return;
  }
 
  renderResult(analyze(raw));
- setStatus(
-  'اكتمل الفحص الاسترشادي. يمكنك مراجعة النص المستخرج من القسم الاختياري.',
-  'ok'
- );
+ setStatus('اكتمل الفحص الاسترشادي. يمكنك مراجعة النص المستخرج من القسم الاختياري.','ok');
 }
 
 el('scan').addEventListener('click',scan);
 
-el('file').addEventListener('change',e=>{
+function onImageSelected(e){
  file=e.target.files?.[0]||null;
+
+ const other=e.target.id==='camera'?'file':'camera';
+ el(other).value='';
 
  if(previewURL){
   URL.revokeObjectURL(previewURL);
@@ -417,6 +441,7 @@ el('file').addEventListener('change',e=>{
 
  el('result').classList.add('hidden');
  el('content').value='';
+ qrValues=[];
 
  if(!file){
   el('preview').style.display='none';
@@ -434,7 +459,10 @@ el('file').addEventListener('change',e=>{
  el('preview').src=previewURL;
  el('preview').style.display='block';
  setStatus('تم اختيار الصورة. اضغط «افحص الصورة» مرة واحدة.');
-});
+}
+
+el('file').addEventListener('change',onImageSelected);
+el('camera').addEventListener('change',onImageSelected);
 
 async function loadOCR(){
  if(window.Tesseract)return window.Tesseract;
@@ -461,6 +489,84 @@ async function loadOCR(){
  return ocrPromise;
 }
 
+async function loadQR(){
+ if(window.jsQR)return window.jsQR;
+ if(qrPromise)return qrPromise;
+
+ qrPromise=new Promise((resolve,reject)=>{
+  const script=document.createElement('script');
+  script.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+
+  script.onload=()=>window.jsQR
+   ?resolve(window.jsQR)
+   :reject(Error('لم تُحمّل مكتبة QR'));
+
+  script.onerror=()=>reject(
+   Error('تعذر تحميل مكتبة QR')
+  );
+
+  document.head.append(script);
+ }).catch(err=>{
+  qrPromise=null;
+  throw err;
+ });
+
+ return qrPromise;
+}
+
+async function readQR(imageFile){
+ const values=[];
+ const bitmap=await createImageBitmap(imageFile);
+
+ try{
+  const scale=Math.min(
+   1,1800/Math.max(bitmap.width,bitmap.height)
+  );
+
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+  canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+
+  if('BarcodeDetector' in window){
+   try{
+    const supported=await BarcodeDetector.getSupportedFormats();
+    const formats=[
+     'qr_code','ean_13','ean_8','code_128'
+    ].filter(x=>supported.includes(x));
+
+    if(formats.length){
+     const detector=new BarcodeDetector({formats});
+     for(const hit of await detector.detect(canvas)){
+      if(hit.rawValue)values.push(hit.rawValue);
+     }
+    }
+   }catch(e){}
+  }
+
+  if(!values.length){
+   const decoder=await loadQR();
+   const data=ctx.getImageData(
+    0,0,canvas.width,canvas.height
+   );
+
+   const found=decoder(
+    data.data,canvas.width,canvas.height,
+    {inversionAttempts:'attemptBoth'}
+   );
+
+   if(found?.data)values.push(found.data);
+  }
+
+ }finally{
+  bitmap.close();
+ }
+
+ return [...new Set(values)];
+}
+
 el('ocr').addEventListener('click',async()=>{
  if(ocrWorking)return;
 
@@ -477,47 +583,76 @@ el('ocr').addEventListener('click',async()=>{
  el('ocrProgress').style.display='block';
  el('ocrProgress').value=0;
 
+ qrValues=[];
+ let text='',ocrError=null,qrError=null;
+
  try{
-  setStatus('جارٍ تحميل محرك قراءة الصور...');
-  const OCR=await loadOCR();
+  setStatus('جارٍ فحص QR والباركود والنصوص...');
 
-  setStatus('جارٍ استخراج النص وتحليله تلقائياً. قد تستغرق القراءة بعض الوقت.');
+  try{
+   qrValues=await readQR(currentFile);
+  }catch(err){
+   qrError=err;
+  }
 
-  const out=await OCR.recognize(currentFile,'ara+eng',{
-   logger:m=>{
-    if(m.status==='recognizing text'){
-     const p=Math.round((m.progress||0)*100);
-     el('ocrProgress').value=p;
-     setStatus('قراءة الصورة: '+p+'٪ — سيظهر التحليل تلقائياً');
+  try{
+   const OCR=await loadOCR();
+
+   const out=await OCR.recognize(
+    currentFile,'ara+eng',{
+     logger:m=>{
+      if(m.status==='recognizing text'){
+       const pct=Math.round((m.progress||0)*100);
+       el('ocrProgress').value=pct;
+       setStatus('قراءة الصورة: '+pct+'٪');
+      }
+     }
     }
-   }
-  });
+   );
+
+   text=(out.data?.text||'').trim();
+  }catch(err){
+   ocrError=err;
+  }
 
   if(file!==currentFile){
-   setStatus('تغيرت الصورة أثناء الفحص؛ اضغط «افحص الصورة» للصورة الجديدة.');
+   setStatus('تغيرت الصورة أثناء الفحص. أعد المحاولة.');
    return;
   }
 
-  const txt=(out.data?.text||'').trim();
+  const parts=[];
 
-  if(!txt||txt.replace(/\s/g,'').length<4){
-   el('content').value='';
-   setStatus('لم يُستخرج نص كافٍ من الصورة، لذلك لم يصدر تقييم. حاول بصورة أوضح أو أدخل النص يدوياً.','error');
+  if(text.replace(/\s/g,'').length>=4){
+   parts.push(text);
+  }
+
+  if(qrValues.length){
+   parts.push(...qrValues.filter(v=>!text.includes(v)));
+  }
+
+  const combined=parts.join('\n');
+
+  if(!combined){
+   setStatus(
+    'لم يمكن قراءة نص أو رمز واضح. '+
+    (ocrError?'تعذر OCR. ':'')+
+    (qrError?'تعذر QR. ':'')+
+    'جرّب صورة أوضح.',
+    'error'
+   );
    return;
   }
 
-  el('content').value=txt;
+  el('content').value=combined;
   scan();
 
- }catch(err){
-  el('content').value='';
-  el('result').classList.add('hidden');
-  setStatus(
-   'فشلت قراءة الصورة، ولم تُصدر نتيجة أمنية: '+
-   (err?.message||'خطأ غير معروف')+
-   '. يمكنك إدخال النص يدوياً.',
-   'error'
-  );
+  if(ocrError||qrError){
+   setStatus(
+    'ظهرت النتيجة من البيانات المقروءة، لكن بعض طرق القراءة تعذرت. راجع النص والرمز قبل الاعتماد على النتيجة.',
+    'error'
+   );
+  }
+
  }finally{
   ocrWorking=false;
   el('ocr').disabled=false;
@@ -534,6 +669,7 @@ const examples={
 Object.entries(examples).forEach(([id,t])=>
  el(id).addEventListener('click',()=>{
   el('content').value=t;
+  qrValues=[];
   el('result').classList.add('hidden');
   scan();
  })
@@ -542,7 +678,9 @@ Object.entries(examples).forEach(([id,t])=>
 function clearAll(){
  el('content').value='';
  el('file').value='';
+ el('camera').value='';
  file=null;
+ qrValues=[];
 
  if(previewURL){
   URL.revokeObjectURL(previewURL);
