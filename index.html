@@ -1,39 +1,1041 @@
 
-<button type="button" id="addImage" class="addImage">
-  ＋ إضافة صورة للفحص
-</button>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123d49">
+<title>تحقّق | درع المجتمع الرقمي</title>
+<style>
+:root {
+  font-family: -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Tahoma, Arial, sans-serif;
+  color: #18343f;
+  background: #f1f6f7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 850px; margin: auto; padding: 14px 12px 55px; }
+header {
+  background: linear-gradient(130deg,#193d4b,#277b7b);
+  color: white;
+  border-radius: 23px;
+  padding: 28px 23px;
+}
+header h1 { margin: 0 0 10px; font-size: 33px; }
+header p { margin: 8px 0; line-height: 1.7; }
+.tag {
+  display: inline-block;
+  background: #ffffff24;
+  padding: 9px 12px;
+  border-radius: 30px;
+  font-size: 12px;
+  margin-top: 12px;
+}
+.card {
+  background: white;
+  border: 1px solid #dce8e9;
+  border-radius: 20px;
+  padding: 19px;
+  margin-top: 15px;
+}
+h2 { font-size: 20px; margin: 0 0 12px; }
+h3 { font-size: 16px; margin: 18px 0 9px; }
+p { line-height: 1.8; }
+.muted { color: #5b737d; font-size: 14px; }
+button {
+  font: inherit;
+  border: 0;
+  border-radius: 13px;
+  padding: 14px;
+  background: #247d80;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+button:disabled { opacity: .5; }
+.secondary { background: #e7f1f2; color: #24545e; }
+.primary { width: 100%; font-size: 17px; padding: 18px; }
+.hidden { display: none !important; }
+.menu {
+  background: #f4f8f9;
+  border: 1px solid #d8e5e8;
+  border-radius: 17px;
+  margin-top: 12px;
+  padding: 9px;
+}
+.menu button {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  background: white;
+  color: #193c49;
+  text-align: right;
+  border: 1px solid #e0e9eb;
+  margin: 5px 0;
+  padding: 17px 14px;
+}
+.menu button span { font-size: 23px; }
+.menu button strong { font-size: 15px; }
+.menu button small {
+  display: block;
+  font-size: 12px;
+  color: #70858b;
+  margin-top: 5px;
+  font-weight: 400;
+}
+.fileHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.cameraBox {
+  background: #112e38;
+  border-radius: 16px;
+  padding: 12px;
+  margin-top: 12px;
+}
+video {
+  width: 100%;
+  max-height: 430px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: black;
+}
+.actions { display: flex; gap: 9px; flex-wrap: wrap; margin: 13px 0; }
+.actions button { flex: 1; }
+#preview {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: #f0f5f6;
+  margin-top: 13px;
+}
+.status {
+  background: #eaf3f5;
+  padding: 13px;
+  border-radius: 12px;
+  line-height: 1.7;
+  margin-top: 13px;
+  font-size: 14px;
+}
+.status.error { background: #fff0e8; color: #8c361b; }
+.status.ok { background: #e6f5eb; color: #185c3c; }
+textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 12px;
+  border: 1px solid #bed2d5;
+  border-radius: 12px;
+  font: inherit;
+  line-height: 1.8;
+}
+details {
+  background: #f4f8f9;
+  border-radius: 13px;
+  padding: 13px;
+}
+summary { cursor: pointer; font-weight: 700; }
+.risk {
+  border-right: 6px solid;
+  border-radius: 14px;
+  padding: 16px;
+  line-height: 1.8;
+}
+.risk.high { background: #ffeded; border-color: #c83d42; }
+.risk.medium { background: #fff2df; border-color: #d18b23; }
+.risk.unknown { background: #edf2f5; border-color: #8a9ba5; }
+.item {
+  border-bottom: 1px solid #e3ecee;
+  padding: 12px 0;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+}
+.item:last-child { border: 0; }
+.notice {
+  background: #fff3dd;
+  border-radius: 13px;
+  padding: 14px;
+  line-height: 1.8;
+}
+progress { width: 100%; accent-color: #247d80; }
+#result { scroll-margin-top: 12px; }
+</style>
+</head>
 
-<div id="sourceMenu" class="sourceMenu hidden"
-     role="group" aria-label="مصدر الصورة">
+<body>
+<main>
 
-  <button type="button" id="openCamera" class="sourceOption">
-    📷 التصوير بالكاميرا
+<header>
+  <h1>🛡️ تحقّق</h1>
+  <p>درع المجتمع الرقمي</p>
+  <p>افحص الرسالة أو الإعلان أو رمز QR قبل أن تثق به.</p>
+  <div class="tag">
+    نموذج تجريبي مستقل للمسابقة • ليس خدمة رسمية لشرطة أبوظبي
+  </div>
+</header>
+
+<section class="card">
+  <h2>فحص صورة أو رمز QR</h2>
+  <p class="muted">
+    التقط صورة مباشرة أو اختر صورة محفوظة.
+    يفحص التطبيق النصوص والروابط ورموز QR دون فتح الروابط.
+  </p>
+
+  <button id="addImage" class="primary" type="button"
+          aria-expanded="false">
+    ＋ إضافة صورة للفحص
   </button>
 
-  <button type="button" id="openGallery" class="sourceOption">
-    اختيار من الاستوديو
-  </button>
+  <div id="sourceMenu" class="menu hidden">
 
-  <button type="button" id="openFiles" class="sourceOption">
-    اختيار من الملفات
-  </button>
+    <button id="openCamera" type="button">
+      <span>📷</span>
+      <div>
+        <strong>التقاط صورة بالكاميرا</strong>
+        <small>تصوير مباشر من داخل الموقع</small>
+      </div>
+    </button>
 
-</div>
+    <button id="openGallery" type="button">
+      <span>▧</span>
+      <div>
+        <strong>اختيار من الاستوديو</strong>
+        <small>الصور المحفوظة على الآيفون</small>
+      </div>
+    </button>
 
-<input id="galleryInput" class="hidden"
-       type="file" accept="image/*">
+    <button id="openFiles" type="button">
+      <span>▤</span>
+      <div>
+        <strong>اختيار من الملفات</strong>
+        <small>ملفات الجهاز أو iCloud Drive</small>
+      </div>
+    </button>
 
-<input id="filesInput" class="hidden"
-       type="file" accept="image/*">
+  </div>
 
-<div id="cameraPanel" class="cameraPanel hidden">
-  <video id="cameraVideo" autoplay playsinline muted></video>
+  <input id="galleryInput" class="fileHidden"
+         type="file" accept="image/*">
 
-  <button type="button" id="takePhoto">
-    التقاط الصورة
-  </button>
+  <input id="filesInput" class="fileHidden"
+         type="file" accept="image/*">
 
-  <button type="button" id="closeCamera">
-    إلغاء
-  </button>
-</div>
+  <div id="cameraPanel" class="cameraBox hidden">
+    <video id="cameraVideo" autoplay playsinline muted></video>
+    <div class="actions">
+      <button id="takePhoto" type="button">التقاط الصورة</button>
+      <button id="closeCamera" class="secondary" type="button">
+        إلغاء
+      </button>
+    </div>
+  </div>
+
+  <img id="preview" class="hidden" alt="معاينة الصورة">
+
+  <div class="actions">
+    <button id="scanImage" type="button">افحص الآن</button>
+    <button id="reset" class="secondary" type="button">
+      بدء فحص جديد
+    </button>
+  </div>
+
+  <progress id="progress" class="hidden" max="100" value="0">
+  </progress>
+
+  <div id="status" class="status" role="status" aria-live="polite">
+    جاهز. اضغط «إضافة صورة للفحص».
+  </div>
+</section>
+
+<section class="card">
+  <details>
+    <summary>إدخال نص أو مراجعة النص المستخرج</summary>
+    <p class="muted">
+      يمكنك لصق رسالة مباشرة، أو تصحيح النص الذي قرأه التطبيق.
+    </p>
+    <textarea id="textInput"
+      placeholder="اكتب الرسالة أو الصقها هنا"></textarea>
+    <div class="actions">
+      <button id="scanText" type="button">تحليل النص</button>
+    </div>
+  </details>
+</section>
+
+<section class="card">
+  <h2>تجربة النظام</h2>
+  <div class="actions">
+    <button class="secondary" id="demoFraud">
+      رسالة مشبوهة
+    </button>
+    <button class="secondary" id="demoOTP">
+      سرقة رمز تحقق
+    </button>
+    <button class="secondary" id="demoNormal">
+      رسالة عادية
+    </button>
+  </div>
+</section>
+
+<section id="result" class="card hidden">
+  <h2>نتيجة الفحص</h2>
+  <div id="verdict"></div>
+
+  <h3>أسباب النتيجة</h3>
+  <div id="reasons"></div>
+
+  <h3>الرموز المقروءة</h3>
+  <div id="qrResults"></div>
+
+  <h3>فحص الروابط وأسماء النطاقات</h3>
+  <div id="links"></div>
+
+  <h3>أرقام الهاتف المكتشفة</h3>
+  <div id="phones"></div>
+
+  <h3>التحقق من الجهة</h3>
+  <div class="notice">
+    لا يثبت هذا الفحص هوية المرسل أو سلامة الموقع.
+    تحقق من الجهة عبر قنواتها الرسمية المستقلة،
+    ولا تشارك رموز التحقق أو المعلومات البنكية.
+  </div>
+
+  <h3>مواقع مرجعية</h3>
+  <div id="references"></div>
+</section>
+
+<section class="card">
+  <h2>الخصوصية وحدود النظام</h2>
+  <p class="muted">
+    هذا نموذج تجريبي يعتمد على قواعد تحليل محلية،
+    وليس خدمة حكومية أو محرك تحقق متصل بقواعد بيانات رسمية.
+    قراءة الصور تتم في المتصفح بعد تحميل مكتبات القراءة.
+    لا تُفتح الروابط الموجودة في الصور تلقائياً.
+    عدم ظهور تحذير لا يعني أن الرسالة آمنة.
+  </p>
+</section>
+
+</main>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+
+let selectedFile = null;
+let previewURL = null;
+let cameraStream = null;
+let working = false;
+let qrValues = [];
+let OCRPromise = null;
+let QRPromise = null;
+let operation = 0;
+
+function status(message, kind = "") {
+  $("status").textContent = message;
+  $("status").className = "status " + kind;
+}
+
+function node(tag, text, cls = "") {
+  const n = document.createElement(tag);
+  n.textContent = text;
+  if (cls) n.className = cls;
+  return n;
+}
+
+function showItems(id, values, emptyText) {
+  const target = $(id);
+  target.replaceChildren();
+
+  if (!values.length) {
+    target.append(node("div", emptyText, "muted"));
+    return;
+  }
+
+  values.forEach(value => {
+    target.append(node("div", value, "item"));
+  });
+}
+
+function closeMenu() {
+  $("sourceMenu").classList.add("hidden");
+  $("addImage").setAttribute("aria-expanded", "false");
+}
+
+$("addImage").onclick = () => {
+  const menu = $("sourceMenu");
+  menu.classList.toggle("hidden");
+  $("addImage").setAttribute(
+    "aria-expanded",
+    String(!menu.classList.contains("hidden"))
+  );
+};
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  $("cameraVideo").srcObject = null;
+  $("cameraPanel").classList.add("hidden");
+}
+
+function selectImage(image) {
+  if (!image || !image.type.startsWith("image/")) {
+    status("الملف المختار ليس صورة صالحة.", "error");
+    return;
+  }
+
+  operation++;
+  stopCamera();
+  closeMenu();
+
+  selectedFile = image;
+  qrValues = [];
+
+  if (previewURL) URL.revokeObjectURL(previewURL);
+  previewURL = URL.createObjectURL(image);
+
+  $("preview").src = previewURL;
+  $("preview").classList.remove("hidden");
+  $("textInput").value = "";
+  $("result").classList.add("hidden");
+
+  status("الصورة جاهزة. اضغط «افحص الآن».", "ok");
+}
+
+function handleFile(event) {
+  const image = event.target.files?.[0];
+  if (image) selectImage(image);
+  event.target.value = "";
+}
+
+$("galleryInput").onchange = handleFile;
+$("filesInput").onchange = handleFile;
+
+$("openGallery").onclick = () => {
+  closeMenu();
+  $("galleryInput").click();
+};
+
+$("openFiles").onclick = () => {
+  closeMenu();
+  $("filesInput").click();
+};
+
+$("openCamera").onclick = async () => {
+  closeMenu();
+  stopCamera();
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    status(
+      "المتصفح لا يدعم تشغيل الكاميرا داخل الصفحة. افتح الموقع في Safari عبر HTTPS.",
+      "error"
+    );
+    return;
+  }
+
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: { ideal: "environment" } }
+    });
+
+    const video = $("cameraVideo");
+    video.srcObject = cameraStream;
+    $("cameraPanel").classList.remove("hidden");
+
+    await video.play();
+
+    status("الكاميرا تعمل. وجّهها نحو الهدف ثم التقط الصورة.");
+  } catch (error) {
+    stopCamera();
+    status(
+      "تعذّر فتح الكاميرا. اسمح للموقع باستخدام الكاميرا من إعدادات Safari. " +
+      (error.name || ""),
+      "error"
+    );
+  }
+};
+
+$("closeCamera").onclick = () => {
+  stopCamera();
+  status("تم إغلاق الكاميرا.");
+};
+
+$("takePhoto").onclick = () => {
+  const video = $("cameraVideo");
+
+  if (!cameraStream || !video.videoWidth) {
+    status("انتظر حتى تظهر معاينة الكاميرا.", "error");
+    return;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  canvas.getContext("2d").drawImage(video, 0, 0);
+
+  canvas.toBlob(blob => {
+    if (!blob) {
+      status("تعذّر التقاط الصورة.", "error");
+      return;
+    }
+
+    const image = new File(
+      [blob],
+      "tahaq-camera.jpg",
+      { type: "image/jpeg" }
+    );
+
+    selectImage(image);
+  }, "image/jpeg", 0.92);
+};
+
+function normalize(text) {
+  return text
+    .replace(/[\u064B-\u065F\u0670]/g, "")
+    .replace(/[إأآ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ـ/g, "")
+    .toLowerCase();
+}
+
+const officialSites = [
+  { domain: "u.ae", name: "البوابة الرسمية لحكومة الإمارات" },
+  { domain: "adpolice.gov.ae", name: "شرطة أبوظبي" },
+  { domain: "moi.gov.ae", name: "وزارة الداخلية" }
+];
+
+const shorteners = new Set([
+  "bit.ly", "tinyurl.com", "t.co",
+  "cutt.ly", "is.gd", "rebrand.ly"
+]);
+
+const patterns = [
+  {
+    regex: /(?:otp|one.time.password|رمز.{0,15}(?:تحقق|تاكيد|سري))/i,
+    score: 3,
+    reason: "تتضمن الرسالة رمز تحقق أو إشارة إلى رمز سري."
+  },
+  {
+    regex: /(?:ارسل|شارك|اعطني|send|share).{0,40}(?:رمز|كود|otp|code)/i,
+    score: 4,
+    reason: "طلب مشاركة رمز تحقق أو بيانات حساسة."
+  },
+  {
+    regex: /(?:عاجل|فورا|سارع|خلال ساعة|سيتم ايقاف|سيتم حظر|urgent)/i,
+    score: 1,
+    reason: "تستخدم الرسالة أسلوب الاستعجال والضغط."
+  },
+  {
+    regex: /(?:ارباح|ربح|عائد).{0,40}(?:مضمون|يومي|100%)/i,
+    score: 3,
+    reason: "تتضمن وعوداً مالية قد تكون مضللة."
+  },
+  {
+    regex: /(?:ادفع|حول|تحويل|رسوم|payment|transfer)/i,
+    score: 1,
+    reason: "تحتوي الرسالة على طلب دفع أو تحويل."
+  },
+  {
+    regex: /(?:اضغط|انقر|افتح).{0,30}(?:رابط|لينك|هنا)/i,
+    score: 1,
+    reason: "تطلب الرسالة فتح رابط."
+  }
+];
+
+function extractURLs(text) {
+  const matches = text.match(
+    /(?:https?:\/\/|www\.)[^\s<>"'،؛]+|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:ae|com|net|org|app|info|io|co|me|ly|xyz|site|online|click|shop)\b[^\s<>"'،؛]*/gi
+  ) || [];
+
+  return [...new Set(
+    matches.map(v => v.replace(/[.,!?،؛)\]]+$/, ""))
+  )];
+}
+
+function extractPhones(text) {
+  return [...new Set(
+    (text.match(/(?:\+|00)?\d[\d\s()\-]{7,}\d/g) || [])
+      .map(v => v.trim())
+      .filter(v => v.replace(/\D/g, "").length >= 9)
+  )];
+}
+
+function inspectURL(raw) {
+  const notes = [];
+  let score = 0;
+  let host = "";
+  let reference = null;
+
+  try {
+    const url = new URL(
+      /^https?:\/\//i.test(raw) ? raw : "https://" + raw
+    );
+
+    host = url.hostname.toLowerCase().replace(/\.$/, "");
+
+    if (!host.includes(".")) throw Error("invalid");
+
+    reference = officialSites.find(site =>
+      host === site.domain ||
+      host.endsWith("." + site.domain)
+    ) || null;
+
+    if (url.protocol === "http:") {
+      score += 2;
+      notes.push("الرابط يستخدم HTTP غير المشفّر.");
+    }
+
+    if (url.username || url.password || raw.includes("@")) {
+      score += 3;
+      notes.push("يحتوي الرابط على @ وقد يخفي الوجهة الفعلية.");
+    }
+
+    if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(host)) {
+      score += 2;
+      notes.push("الرابط يستخدم عنوان IP.");
+    }
+
+    if (host.includes("xn--")) {
+      score += 2;
+      notes.push("النطاق يحتوي على ترميز قد يستدعي فحص تشابه الحروف.");
+    }
+
+    if (shorteners.has(host)) {
+      score += 2;
+      notes.push("الرابط مختصر، ووجهته النهائية غير معروفة.");
+    }
+
+    if (
+      !reference &&
+      /adpolice|police|government|moi|gov|uae/i.test(host)
+    ) {
+      score += 2;
+      notes.push("النطاق يشبه اسماً رسمياً لكنه غير مطابق للقائمة المرجعية.");
+    }
+
+    if (
+      !reference &&
+      /(?:^|[.-])(login|verify|secure|account|otp)(?:[.-]|$)/i.test(host)
+    ) {
+      score += 1;
+      notes.push("النطاق يحتوي على كلمات تستخدم أحياناً في التصيّد.");
+    }
+
+    if (reference) {
+      notes.push(
+        "يطابق نطاقاً مرجعياً محفوظاً: " + reference.name +
+        ". هذا لا يثبت هوية المرسل."
+      );
+    }
+
+    if (!notes.length) {
+      notes.push(
+        "لا توجد علامة تقنية واضحة، لكن لم تُفحص سمعة الرابط."
+      );
+    }
+  } catch {
+    score += 2;
+    notes.push("تعذّر تفسير الرابط بصورة موثوقة.");
+  }
+
+  return { raw, host, score, notes };
+}
+
+function analyze(text) {
+  const normalized = normalize(text);
+  const hits = patterns.filter(p => p.regex.test(normalized));
+  const links = extractURLs(text).map(inspectURL);
+  const phones = extractPhones(text);
+
+  const score =
+    hits.reduce((sum, p) => sum + p.score, 0) +
+    links.reduce((sum, link) => sum + link.score, 0);
+
+  const reasons = hits.map(p => p.reason);
+
+  if (links.length) {
+    reasons.push(
+      "تم فحص بنية الروابط دون فتحها أو التحقق من سمعتها لحظياً."
+    );
+  }
+
+  if (phones.length) {
+    reasons.push("وجود رقم هاتف لا يثبت هوية المرسل.");
+  }
+
+  if (!reasons.length) {
+    reasons.push(
+      "لم تُكتشف مؤشرات كافية. هذا لا يعني أن المحتوى آمن."
+    );
+  }
+
+  reasons.push(
+    "لم يتم التحقق من هوية المرسل عبر جهة رسمية."
+  );
+
+  let level = "unknown";
+  let title = "لا يمكن الجزم بسلامة المحتوى";
+
+  if (score >= 4) {
+    level = "high";
+    title = "تحذير: مؤشرات اشتباه متعددة";
+  } else if (score >= 1) {
+    level = "medium";
+    title = "يحتاج إلى تحقق إضافي";
+  }
+
+  return { level, title, reasons, links, phones };
+}
+
+function renderAnalysis(text) {
+  if (!text.trim()) {
+    status("لا يوجد نص أو رمز واضح لتحليله.", "error");
+    return;
+  }
+
+  const data = analyze(text);
+  const verdict = $("verdict");
+  verdict.replaceChildren();
+
+  const box = node("div", "", "risk " + data.level);
+  box.append(node("h3", data.title));
+  box.append(node(
+    "div",
+    data.level === "high"
+      ? "لا تشارك بيانات أو أموالاً قبل التحقق المستقل."
+      : "لا تعتمد على الرسالة وحدها لإثبات هوية الجهة."
+  ));
+
+  verdict.append(box);
+
+  showItems("reasons", data.reasons, "لا توجد أسباب.");
+  showItems(
+    "qrResults",
+    qrValues,
+    "لم يُكتشف رمز QR أو باركود قابل للقراءة."
+  );
+
+  const linkArea = $("links");
+  linkArea.replaceChildren();
+
+  if (!data.links.length) {
+    linkArea.append(node("div", "لم يُكتشف رابط.", "muted"));
+  }
+
+  data.links.forEach(link => {
+    const item = node("div", "", "item");
+    item.append(node("strong", link.raw));
+    item.append(node(
+      "div",
+      "النطاق الفعلي: " + (link.host || "غير معروف"),
+      "muted"
+    ));
+
+    link.notes.forEach(note => {
+      item.append(node("div", "• " + note, "muted"));
+    });
+
+    linkArea.append(item);
+  });
+
+  showItems("phones", data.phones, "لم يُكتشف رقم هاتف.");
+
+  const refs = $("references");
+  refs.replaceChildren();
+
+  officialSites.forEach(site => {
+    const line = node("div", "", "item");
+    line.append(node("span", site.name + " — "));
+
+    const a = document.createElement("a");
+    a.href = "https://" + site.domain + "/";
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = site.domain;
+
+    line.append(a);
+    refs.append(line);
+  });
+
+  $("result").classList.remove("hidden");
+  $("result").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+function loadScript(url, check) {
+  if (check()) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = url;
+    script.onload = () => {
+      if (check()) resolve();
+      else reject(Error("تعذّر تشغيل المكتبة."));
+    };
+    script.onerror = () => reject(Error("تعذّر تحميل المكتبة."));
+    document.head.append(script);
+  });
+}
+
+function loadOCR() {
+  if (!OCRPromise) {
+    OCRPromise = loadScript(
+      "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js",
+      () => Boolean(window.Tesseract)
+    ).catch(error => {
+      OCRPromise = null;
+      throw error;
+    });
+  }
+  return OCRPromise;
+}
+
+function loadQR() {
+  if (!QRPromise) {
+    QRPromise = loadScript(
+      "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js",
+      () => Boolean(window.jsQR)
+    ).catch(error => {
+      QRPromise = null;
+      throw error;
+    });
+  }
+  return QRPromise;
+}
+
+async function decodeQR(image) {
+  const values = [];
+  const bitmap = await createImageBitmap(image);
+
+  try {
+    const scale = Math.min(
+      1,
+      1800 / Math.max(bitmap.width, bitmap.height)
+    );
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+
+    const context = canvas.getContext(
+      "2d", { willReadFrequently: true }
+    );
+
+    context.drawImage(
+      bitmap, 0, 0, canvas.width, canvas.height
+    );
+
+    if ("BarcodeDetector" in window) {
+      try {
+        const supported =
+          await BarcodeDetector.getSupportedFormats();
+
+        const formats = [
+          "qr_code", "ean_13", "ean_8", "code_128"
+        ].filter(format => supported.includes(format));
+
+        if (formats.length) {
+          const detector = new BarcodeDetector({ formats });
+          const found = await detector.detect(canvas);
+
+          found.forEach(item => {
+            if (item.rawValue) values.push(item.rawValue);
+          });
+        }
+      } catch {}
+    }
+
+    if (!values.length) {
+      await loadQR();
+
+      const pixels = context.getImageData(
+        0, 0, canvas.width, canvas.height
+      );
+
+      const found = window.jsQR(
+        pixels.data,
+        canvas.width,
+        canvas.height,
+        { inversionAttempts: "attemptBoth" }
+      );
+
+      if (found?.data) values.push(found.data);
+    }
+  } finally {
+    bitmap.close();
+  }
+
+  return [...new Set(values)];
+}
+
+$("scanImage").onclick = async () => {
+  if (working) return;
+
+  if (!selectedFile) {
+    status("أضف صورة أولاً.", "error");
+    return;
+  }
+
+  working = true;
+  $("scanImage").disabled = true;
+  $("result").classList.add("hidden");
+  $("progress").classList.remove("hidden");
+  $("progress").value = 0;
+
+  const image = selectedFile;
+  const currentOperation = operation;
+  let text = "";
+  let qrError = null;
+  let ocrError = null;
+  let foundQR = [];
+
+  try {
+    status("جارٍ فحص QR والباركود...");
+
+    try {
+      foundQR = await decodeQR(image);
+    } catch (error) {
+      qrError = error;
+    }
+
+    status("جارٍ قراءة النصوص العربية والإنجليزية...");
+
+    try {
+      await loadOCR();
+
+      const result = await window.Tesseract.recognize(
+        image,
+        "ara+eng",
+        {
+          logger: event => {
+            if (event.status === "recognizing text") {
+              const percent = Math.round(
+                (event.progress || 0) * 100
+              );
+
+              $("progress").value = percent;
+              status("قراءة النص: " + percent + "٪");
+            }
+          }
+        }
+      );
+
+      text = (result.data?.text || "").trim();
+    } catch (error) {
+      ocrError = error;
+    }
+
+    if (
+      operation !== currentOperation ||
+      selectedFile !== image
+    ) {
+      status("تغيرت الصورة أثناء الفحص. أعد المحاولة.");
+      return;
+    }
+
+    qrValues = foundQR;
+
+    const parts = [];
+
+    if (text.replace(/\s/g, "").length >= 4) {
+      parts.push(text);
+    }
+
+    foundQR.forEach(value => {
+      if (!text.includes(value)) parts.push(value);
+    });
+
+    const combined = parts.join("\n");
+
+    if (!combined.trim()) {
+      status(
+        "لم يتم استخراج نص أو رمز واضح. جرّب صورة أوضح.",
+        "error"
+      );
+      return;
+    }
+
+    $("textInput").value = combined;
+    renderAnalysis(combined);
+
+    if (qrError || ocrError) {
+      status(
+        "ظهر التحليل من البيانات المقروءة، لكن إحدى طرق القراءة تعذّرت. راجع النتيجة.",
+        "error"
+      );
+    } else {
+      status("اكتمل الفحص الاسترشادي.", "ok");
+    }
+  } finally {
+    working = false;
+    $("scanImage").disabled = false;
+    $("progress").classList.add("hidden");
+  }
+};
+
+$("scanText").onclick = () => {
+  qrValues = [];
+  renderAnalysis($("textInput").value);
+};
+
+const demos = {
+  demoFraud:
+    "عاجل! لديك رسوم توصيل مستحقة. اضغط الرابط " +
+    "http://bit.ly/example للتحويل فوراً.",
+
+  demoOTP:
+    "سيتم إيقاف حسابك خلال ساعة. أرسل رمز OTP " +
+    "لتأكيد الهوية عبر https://adpolice.gov.ae.fake-login.com",
+
+  demoNormal:
+    "مرحباً، تم تأكيد موعدك غداً الساعة العاشرة صباحاً."
+};
+
+Object.entries(demos).forEach(([id, value]) => {
+  $(id).onclick = () => {
+    qrValues = [];
+    $("textInput").value = value;
+    renderAnalysis(value);
+  };
+});
+
+function resetAll() {
+  operation++;
+  stopCamera();
+  closeMenu();
+
+  selectedFile = null;
+  qrValues = [];
+
+  if (previewURL) {
+    URL.revokeObjectURL(previewURL);
+    previewURL = null;
+  }
+
+  $("preview").removeAttribute("src");
+  $("preview").classList.add("hidden");
+  $("galleryInput").value = "";
+  $("filesInput").value = "";
+  $("textInput").value = "";
+  $("result").classList.add("hidden");
+
+  status("جاهز لفحص جديد.");
+}
+
+$("reset").onclick = resetAll;
+
+window.addEventListener("pagehide", stopCamera);
+</script>
+</body>
+</html>
