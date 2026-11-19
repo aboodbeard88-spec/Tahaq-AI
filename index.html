@@ -43,15 +43,14 @@ button:disabled{opacity:.5}
 .uploadButton{
   display:block;width:100%;text-align:center;
   font-size:18px;padding:19px;
+  position:relative;overflow:hidden;
   -webkit-tap-highlight-color:transparent
 }
-.uploadButton:focus-within{
-  outline:3px solid #a0d6d4;
-  outline-offset:3px
-}
 .nativeFile{
-  position:absolute;width:1px;height:1px;
-  opacity:0;overflow:hidden
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  opacity:0;cursor:pointer;
+  font-size:100px
 }
 .hidden{display:none!important}
 .actions{
@@ -96,6 +95,36 @@ summary{cursor:pointer;font-weight:700}
   background:#fff3dd;border-radius:13px;
   padding:14px;line-height:1.8
 }
+.info{
+  background:#edf7f7;border-radius:13px;
+  padding:14px;line-height:1.8
+}
+.entityRow{
+  padding:12px 0;border-bottom:1px solid #e3ecee;
+  overflow-wrap:anywhere
+}
+.entityRow:last-child{border-bottom:0}
+.entityLabel{
+  color:#5b737d;font-size:13px;margin-bottom:4px
+}
+.entityValue{font-weight:650;line-height:1.7}
+.pill{
+  display:inline-block;padding:6px 10px;
+  border-radius:20px;font-size:12px;
+  background:#e7f1f2;color:#24545e
+}
+.pill.warning{
+  background:#fff0d6;color:#885a0a
+}
+.pill.danger{
+  background:#ffebeb;color:#a33138
+}
+.reportHeader{
+  display:flex;align-items:center;
+  justify-content:space-between;gap:10px;
+  flex-wrap:wrap;margin-bottom:12px
+}
+a{color:#166a78;overflow-wrap:anywhere}
 progress{width:100%;accent-color:#247d80}
 #result{scroll-margin-top:12px}
 @media(max-width:500px){
@@ -111,30 +140,34 @@ progress{width:100%;accent-color:#247d80}
 <header>
   <h1>🛡️ تحقّق</h1>
   <p>درع المجتمع الرقمي</p>
-  <p>افحص الرسالة أو الإعلان أو رمز QR قبل أن تثق به.</p>
+  <p>
+    صورة واحدة، فحص شامل للرسائل والإعلانات
+    والحسابات التجارية والروابط.
+  </p>
   <div class="tag">
     نموذج تجريبي مستقل للمسابقة • ليس خدمة رسمية لشرطة أبوظبي
   </div>
 </header>
 
 <section class="card">
-  <h2>فحص صورة أو رمز QR</h2>
+  <h2>الفحص الشامل من صورة واحدة</h2>
   <p class="muted">
-    اضغط إضافة صورة للفحص، ثم اختر التصوير بالكاميرا
-    أو الاستوديو أو الملفات من قائمة الآيفون الأصلية.
+    التقط صورة لإعلان أو حساب تجاري أو رسالة،
+    أو اختر صورة محفوظة. سيحاول التطبيق استخراج
+    بيانات الجهة والحساب والترخيص ووسائل التواصل،
+    وفحص مؤشرات الاحتيال تلقائياً.
   </p>
 
-  <label for="imageInput" class="uploadButton">
+  <div class="uploadButton">
     ＋ إضافة صورة للفحص
-  </label>
-
-  <input
-    id="imageInput"
-    class="nativeFile"
-    type="file"
-    accept="image/*"
-    aria-label="إضافة صورة للفحص"
-  >
+    <input
+      id="imageInput"
+      class="nativeFile"
+      type="file"
+      accept="image/*"
+      aria-label="إضافة صورة للفحص"
+    >
+  </div>
 
   <img id="preview" class="hidden" alt="معاينة الصورة المختارة">
 
@@ -149,7 +182,7 @@ progress{width:100%;accent-color:#247d80}
   </progress>
 
   <div id="status" class="status" role="status" aria-live="polite">
-    جاهز. اضغط «إضافة صورة للفحص».
+    جاهز. أضف صورة لبدء الفحص.
   </div>
 </section>
 
@@ -157,12 +190,17 @@ progress{width:100%;accent-color:#247d80}
   <details>
     <summary>إدخال نص أو مراجعة النص المستخرج</summary>
     <p class="muted">
-      يمكنك لصق رسالة مباشرة، أو تصحيح النص الذي قرأه التطبيق.
+      يمكنك لصق رسالة أو رابط مباشرة، أو تصحيح
+      النص الذي قرأه التطبيق من الصورة.
     </p>
-    <textarea id="textInput"
-      placeholder="اكتب الرسالة أو الصقها هنا"></textarea>
+    <textarea
+      id="textInput"
+      placeholder="اكتب الرسالة أو الصقها هنا"
+    ></textarea>
     <div class="actions">
-      <button id="scanText" type="button">تحليل النص</button>
+      <button id="scanText" type="button">
+        تحليل النص
+      </button>
     </div>
   </details>
 </section>
@@ -179,14 +217,30 @@ progress{width:100%;accent-color:#247d80}
     <button class="secondary" id="demoNormal">
       رسالة عادية
     </button>
+    <button class="secondary" id="demoBusiness">
+      إعلان متجر
+    </button>
   </div>
 </section>
 
 <section id="result" class="card hidden">
-  <h2>نتيجة الفحص</h2>
+  <div class="reportHeader">
+    <h2 style="margin:0">تقرير الفحص الشامل</h2>
+    <span class="pill">تحليل استرشادي</span>
+  </div>
+
   <div id="verdict"></div>
 
-  <h3>أسباب النتيجة</h3>
+  <h3>بيانات الجهة أو الحساب</h3>
+  <div id="entityReport"></div>
+
+  <h3>الترخيص التجاري</h3>
+  <div id="licenseReport"></div>
+
+  <h3>وسائل التواصل المكتشفة</h3>
+  <div id="contactReport"></div>
+
+  <h3>أسباب نتيجة الفحص</h3>
   <div id="reasons"></div>
 
   <h3>الرموز المقروءة</h3>
@@ -199,24 +253,24 @@ progress{width:100%;accent-color:#247d80}
   <div id="phones"></div>
 
   <h3>التحقق من الجهة</h3>
-  <div class="notice">
-    لا يثبت هذا الفحص هوية المرسل أو سلامة الموقع.
-    تحقق من الجهة عبر قنواتها الرسمية المستقلة،
-    ولا تشارك رموز التحقق أو المعلومات البنكية.
-  </div>
+  <div id="verificationReport"></div>
 
-  <h3>مواقع مرجعية</h3>
+  <h3>مواقع رسمية مرجعية</h3>
   <div id="references"></div>
 </section>
 
 <section class="card">
   <h2>الخصوصية وحدود النظام</h2>
   <p class="muted">
-    هذا نموذج تجريبي يعتمد على قواعد تحليل محلية،
-    وليس خدمة حكومية أو محرك تحقق متصلاً بقواعد بيانات رسمية.
-    قراءة الصور تتم داخل المتصفح بعد تحميل مكتبات القراءة.
+    هذا نموذج تجريبي يعتمد على استخراج النصوص
+    وقواعد تحليل محلية، وليس خدمة حكومية
+    أو نظام تحقق متصلاً بقواعد بيانات الرخص الرسمية.
+    لا يمكن إثبات صلاحية الترخيص أو ملكية الحساب
+    من صورة وحدها.
+    تتم قراءة الصور داخل المتصفح بعد تحميل مكتبات
+    القراءة من مزود خارجي.
     لا تُفتح الروابط الموجودة في الصور تلقائياً.
-    عدم ظهور تحذير لا يعني أن الرسالة آمنة.
+    عدم ظهور تحذير لا يعني أن المحتوى آمن.
   </p>
 </section>
 
@@ -247,6 +301,10 @@ function node(tag, text, cls = "") {
   return n;
 }
 
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
 function showItems(id, values, emptyText) {
   const target = $(id);
   target.replaceChildren();
@@ -259,6 +317,13 @@ function showItems(id, values, emptyText) {
   values.forEach(value => {
     target.append(node("div", value, "item"));
   });
+}
+
+function field(label, value) {
+  const row = node("div", "", "entityRow");
+  row.append(node("div", label, "entityLabel"));
+  row.append(node("div", value, "entityValue"));
+  return row;
 }
 
 function selectImage(image) {
@@ -298,46 +363,83 @@ function normalize(text) {
 }
 
 const officialSites = [
-  { domain: "u.ae", name: "البوابة الرسمية لحكومة الإمارات" },
-  { domain: "adpolice.gov.ae", name: "شرطة أبوظبي" },
-  { domain: "moi.gov.ae", name: "وزارة الداخلية" }
+  {
+    domain:"u.ae",
+    name:"البوابة الرسمية لحكومة الإمارات"
+  },
+  {
+    domain:"adpolice.gov.ae",
+    name:"شرطة أبوظبي"
+  },
+  {
+    domain:"moi.gov.ae",
+    name:"وزارة الداخلية"
+  },
+  {
+    domain:"added.gov.ae",
+    name:"دائرة التنمية الاقتصادية - أبوظبي"
+  },
+  {
+    domain:"dubaidet.gov.ae",
+    name:"دائرة الاقتصاد والسياحة - دبي"
+  },
+  {
+    domain:"sedd.ae",
+    name:"دائرة التنمية الاقتصادية - الشارقة"
+  },
+  {
+    domain:"ajmanded.ae",
+    name:"دائرة التنمية الاقتصادية - عجمان"
+  },
+  {
+    domain:"uaqded.gov.ae",
+    name:"دائرة التنمية الاقتصادية - أم القيوين"
+  },
+  {
+    domain:"ded.rak.ae",
+    name:"دائرة التنمية الاقتصادية - رأس الخيمة"
+  },
+  {
+    domain:"fujairah.ae",
+    name:"بوابة حكومة الفجيرة"
+  }
 ];
 
 const shorteners = new Set([
-  "bit.ly", "tinyurl.com", "t.co",
-  "cutt.ly", "is.gd", "rebrand.ly"
+  "bit.ly","tinyurl.com","t.co",
+  "cutt.ly","is.gd","rebrand.ly"
 ]);
 
 const patterns = [
   {
     regex: /(?:otp|one.time.password|رمز.{0,15}(?:تحقق|تاكيد|سري))/i,
-    score: 3,
-    reason: "تتضمن الرسالة رمز تحقق أو إشارة إلى رمز سري."
+    score:3,
+    reason:"تتضمن الرسالة رمز تحقق أو إشارة إلى رمز سري."
   },
   {
     regex: /(?:ارسل|شارك|اعطني|send|share).{0,40}(?:رمز|كود|otp|code)/i,
-    score: 4,
-    reason: "طلب مشاركة رمز تحقق أو بيانات حساسة."
+    score:4,
+    reason:"طلب مشاركة رمز تحقق أو بيانات حساسة."
   },
   {
     regex: /(?:عاجل|فورا|سارع|خلال ساعة|سيتم ايقاف|سيتم حظر|urgent)/i,
-    score: 1,
-    reason: "تستخدم الرسالة أسلوب الاستعجال والضغط."
+    score:1,
+    reason:"تستخدم الرسالة أسلوب الاستعجال والضغط."
   },
   {
     regex: /(?:ارباح|ربح|عائد).{0,40}(?:مضمون|يومي|100%)/i,
-    score: 3,
-    reason: "تتضمن وعوداً مالية قد تكون مضللة."
+    score:3,
+    reason:"تتضمن وعوداً مالية قد تكون مضللة."
   },
   {
     regex: /(?:ادفع|حول|تحويل|رسوم|payment|transfer)/i,
-    score: 1,
-    reason: "تحتوي الرسالة على طلب دفع أو تحويل."
+    score:1,
+    reason:"تحتوي الرسالة على طلب دفع أو تحويل."
   },
   {
     regex: /(?:اضغط|انقر|افتح).{0,30}(?:رابط|لينك|هنا)/i,
-    score: 1,
-    reason: "تطلب الرسالة فتح رابط."
+    score:1,
+    reason:"تطلب الرسالة فتح رابط."
   }
 ];
 
@@ -346,17 +448,144 @@ function extractURLs(text) {
     /(?:https?:\/\/|www\.)[^\s<>"'،؛]+|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:ae|com|net|org|app|info|io|co|me|ly|xyz|site|online|click|shop)\b[^\s<>"'،؛]*/gi
   ) || [];
 
-  return [...new Set(
+  return unique(
     matches.map(v => v.replace(/[.,!?،؛)\]]+$/, ""))
-  )];
+  );
 }
 
 function extractPhones(text) {
-  return [...new Set(
+  return unique(
     (text.match(/(?:\+|00)?\d[\d\s()\-]{7,}\d/g) || [])
       .map(v => v.trim())
-      .filter(v => v.replace(/\D/g, "").length >= 9)
-  )];
+      .filter(v => {
+        const digits = v.replace(/\D/g,"");
+        return digits.length >= 9 && digits.length <= 15;
+      })
+  );
+}
+
+function extractEmails(text) {
+  return unique(
+    text.match(
+      /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi
+    ) || []
+  );
+}
+
+function extractHandles(text) {
+  const matches = text.match(
+    /(?:^|[\s(])@[a-zA-Z0-9._]{2,30}\b/gm
+  ) || [];
+
+  return unique(
+    matches.map(v => v.trim())
+      .filter(v => !v.includes("@") || !v.includes(".com"))
+  );
+}
+
+function extractSocialAccounts(text) {
+  const results = [];
+
+  extractHandles(text).forEach(handle => {
+    results.push(handle);
+  });
+
+  const socialURLs = extractURLs(text).filter(url =>
+    /(?:instagram\.com|tiktok\.com|facebook\.com|snapchat\.com|x\.com|twitter\.com|wa\.me|whatsapp\.com)/i.test(url)
+  );
+
+  socialURLs.forEach(url => results.push(url));
+
+  return unique(results);
+}
+
+function extractLicenses(text) {
+  const results = [];
+
+  const patterns = [
+    /(?:رقم\s*(?:الرخصة|الرخصه|الترخيص)|الرخصة\s*(?:التجارية)?\s*(?:رقم|no\.?|#)|license\s*(?:number|no\.?|#)|trade\s*license\s*(?:number|no\.?|#))\s*[:：#\-]?\s*([A-Z0-9][A-Z0-9\/\- ]{3,24})/gi,
+    /(?:رخصة\s*تجارية|trade\s*license)\s*[:：#\-]\s*([A-Z0-9][A-Z0-9\/\- ]{3,24})/gi
+  ];
+
+  patterns.forEach(regex => {
+    for (const match of text.matchAll(regex)) {
+      const candidate = match[1]
+        .trim()
+        .replace(/\s{2,}/g," ");
+
+      if (/\d{4,}/.test(candidate)) {
+        results.push(candidate);
+      }
+    }
+  });
+
+  return unique(results);
+}
+
+function extractClaimedNames(text) {
+  const names = [];
+
+  const lines = text.split(/\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  const regexes = [
+    /(?:اسم\s*(?:الشركة|المتجر|المؤسسة|المنشأة|الجهة)|الاسم\s*التجاري|business\s*name|company\s*name|store\s*name)\s*[:：\-]\s*(.+)/i,
+    /(?:متجر|شركة|مؤسسة|مطعم|مقهى|صالون)\s+([^\n،:]{3,65})/i
+  ];
+
+  lines.forEach(line => {
+    regexes.forEach(regex => {
+      const match = line.match(regex);
+      if (match) {
+        const name = match[1].trim().slice(0,70);
+        if (name.length >= 3) names.push(name);
+      }
+    });
+  });
+
+  return unique(names).slice(0,5);
+}
+
+function extractEmirates(text) {
+  const n = normalize(text);
+  const matches = [];
+
+  const names = [
+    ["أبوظبي",["ابوظبي","abu dhabi"]],
+    ["دبي",["دبي","dubai"]],
+    ["الشارقة",["الشارقه","الشارقة","sharjah"]],
+    ["عجمان",["عجمان","ajman"]],
+    ["أم القيوين",["ام القيوين","umm al quwain","uaq"]],
+    ["رأس الخيمة",["راس الخيمه","راس الخيمة","ras al khaimah"]],
+    ["الفجيرة",["الفجيره","الفجيرة","fujairah"]]
+  ];
+
+  names.forEach(([name,terms]) => {
+    if (terms.some(term => n.includes(normalize(term)))) {
+      matches.push(name);
+    }
+  });
+
+  return matches;
+}
+
+function extractBusinessData(text) {
+  const n = normalize(text);
+
+  const licenseClaim =
+    /(?:مرخص|مرخصه|رخصة تجارية|رخصه تجاريه|licensed|trade license|commercial license)/i
+      .test(n);
+
+  return {
+    names:extractClaimedNames(text),
+    handles:extractSocialAccounts(text),
+    licenses:extractLicenses(text),
+    emails:extractEmails(text),
+    phones:extractPhones(text),
+    emirates:extractEmirates(text),
+    licenseClaim
+  };
 }
 
 function inspectURL(raw) {
@@ -370,7 +599,7 @@ function inspectURL(raw) {
       /^https?:\/\//i.test(raw) ? raw : "https://" + raw
     );
 
-    host = url.hostname.toLowerCase().replace(/\.$/, "");
+    host = url.hostname.toLowerCase().replace(/\.$/,"");
 
     if (!host.includes(".")) throw Error("invalid");
 
@@ -396,12 +625,12 @@ function inspectURL(raw) {
 
     if (host.includes("xn--")) {
       score += 2;
-      notes.push("النطاق يحتوي على ترميز قد يستدعي فحص تشابه الحروف.");
+      notes.push("النطاق يحتوي على ترميز يستدعي فحص تشابه الحروف.");
     }
 
     if (shorteners.has(host)) {
       score += 2;
-      notes.push("الرابط مختصر، ووجهته النهائية غير معروفة.");
+      notes.push("الرابط مختصر ووجهته النهائية غير معروفة.");
     }
 
     if (
@@ -422,8 +651,9 @@ function inspectURL(raw) {
 
     if (reference) {
       notes.push(
-        "يطابق نطاقاً مرجعياً محفوظاً: " + reference.name +
-        ". هذا لا يثبت هوية المرسل."
+        "يطابق نطاقاً مرجعياً محفوظاً: " +
+        reference.name +
+        ". هذا لا يثبت هوية المرسل أو الحساب."
       );
     }
 
@@ -437,7 +667,7 @@ function inspectURL(raw) {
     notes.push("تعذّر تفسير الرابط بصورة موثوقة.");
   }
 
-  return { raw, host, score, notes };
+  return {raw,host,score,notes,reference};
 }
 
 function analyze(text) {
@@ -445,10 +675,11 @@ function analyze(text) {
   const hits = patterns.filter(p => p.regex.test(normalized));
   const links = extractURLs(text).map(inspectURL);
   const phones = extractPhones(text);
+  const business = extractBusinessData(text);
 
   const score =
-    hits.reduce((sum, p) => sum + p.score, 0) +
-    links.reduce((sum, link) => sum + link.score, 0);
+    hits.reduce((sum,p) => sum + p.score,0) +
+    links.reduce((sum,link) => sum + link.score,0);
 
   const reasons = hits.map(p => p.reason);
 
@@ -458,8 +689,20 @@ function analyze(text) {
     );
   }
 
+  if (business.licenseClaim) {
+    reasons.push(
+      "ورد ادعاء بوجود ترخيص تجاري، لكن لم يتم التحقق منه رسمياً."
+    );
+  }
+
+  if (business.handles.length) {
+    reasons.push(
+      "تم استخراج حسابات أو معرفات اجتماعية، دون إثبات ملكيتها للجهة."
+    );
+  }
+
   if (phones.length) {
-    reasons.push("وجود رقم هاتف لا يثبت هوية المرسل.");
+    reasons.push("وجود رقم هاتف لا يثبت هوية صاحبه.");
   }
 
   if (!reasons.length) {
@@ -469,82 +712,165 @@ function analyze(text) {
   }
 
   reasons.push(
-    "لم يتم التحقق من هوية المرسل عبر جهة رسمية."
+    "لم يتم التحقق من هوية المعلن أو المرسل عبر مصدر رسمي."
   );
 
   let level = "unknown";
-  let title = "لا يمكن الجزم بسلامة المحتوى";
+  let title = "لم تُرصد مؤشرات كافية للحكم";
 
   if (score >= 4) {
     level = "high";
     title = "تحذير: مؤشرات اشتباه متعددة";
   } else if (score >= 1) {
     level = "medium";
-    title = "يحتاج إلى تحقق إضافي";
+    title = "توجد مؤشرات تستدعي التحقق";
   }
 
-  return { level, title, reasons, links, phones };
+  return {
+    level,title,reasons,links,phones,business
+  };
 }
 
-function renderAnalysis(text) {
-  if (!text.trim()) {
-    status("لا يوجد نص أو رمز واضح لتحليله.", "error");
-    return;
-  }
+function renderBusiness(data) {
+  const target = $("entityReport");
+  target.replaceChildren();
 
-  const data = analyze(text);
-  const verdict = $("verdict");
-  verdict.replaceChildren();
+  const b = data.business;
 
-  const box = node("div", "", "risk " + data.level);
-  box.append(node("h3", data.title));
-  box.append(node(
-    "div",
-    data.level === "high"
-      ? "لا تشارك بيانات أو أموالاً قبل التحقق المستقل."
-      : "لا تعتمد على الرسالة وحدها لإثبات هوية الجهة."
+  target.append(field(
+    "اسم الجهة أو المتجر",
+    b.names.length
+      ? b.names.join("، ")
+      : "لم يُستخرج اسم محدد من النص"
   ));
 
-  verdict.append(box);
+  target.append(field(
+    "الحسابات الاجتماعية",
+    b.handles.length
+      ? b.handles.join("، ")
+      : "لم يتم استخراج حساب واضح"
+  ));
 
-  showItems("reasons", data.reasons, "لا توجد أسباب.");
-  showItems(
-    "qrResults",
-    qrValues,
-    "لم يُكتشف رمز QR أو باركود قابل للقراءة."
-  );
+  target.append(field(
+    "الإمارة المذكورة",
+    b.emirates.length
+      ? b.emirates.join("، ")
+      : "غير محددة"
+  ));
 
-  const linkArea = $("links");
-  linkArea.replaceChildren();
+  target.append(node(
+    "div",
+    "هذه بيانات مستخرجة من المحتوى، وليست بيانات هوية موثقة.",
+    "muted"
+  ));
+}
 
-  if (!data.links.length) {
-    linkArea.append(node("div", "لم يُكتشف رابط.", "muted"));
+function renderLicense(data) {
+  const target = $("licenseReport");
+  target.replaceChildren();
+
+  const b = data.business;
+
+  target.append(field(
+    "أرقام الرخص الظاهرة",
+    b.licenses.length
+      ? b.licenses.join("، ")
+      : "لم يُستخرج رقم رخصة واضح"
+  ));
+
+  target.append(field(
+    "ادعاء الترخيص",
+    b.licenseClaim
+      ? "نعم، وردت إشارة إلى وجود ترخيص"
+      : "لم تُرصد عبارة ترخيص واضحة"
+  ));
+
+  target.append(field(
+    "حالة الرخصة الرسمية",
+    "غير متحقق منها — الربط الرسمي غير متاح حالياً"
+  ));
+
+  target.append(node(
+    "div",
+    "وجود رقم رخصة أو عبارة «مرخص» في الإعلان لا يثبت صلاحية الترخيص أو ارتباط الحساب بصاحب الرخصة.",
+    "notice"
+  ));
+}
+
+function renderContacts(data) {
+  const target = $("contactReport");
+  target.replaceChildren();
+
+  const b = data.business;
+
+  target.append(field(
+    "أرقام الهاتف المذكورة",
+    b.phones.length
+      ? b.phones.join("، ")
+      : "لا توجد أرقام واضحة"
+  ));
+
+  target.append(field(
+    "البريد الإلكتروني المذكور",
+    b.emails.length
+      ? b.emails.join("، ")
+      : "لا يوجد بريد واضح"
+  ));
+
+  target.append(field(
+    "وسائل التواصل الرسمية المؤكدة",
+    "لم يتم تأكيدها"
+  ));
+
+  target.append(node(
+    "div",
+    "الأرقام والبريد المستخرجان من الإعلان غير موثقين. لا تعتمد عليهما لإثبات هوية الجهة.",
+    "muted"
+  ));
+}
+
+function renderVerification(data) {
+  const target = $("verificationReport");
+  target.replaceChildren();
+
+  const b = data.business;
+
+  let message =
+    "لا يمكن إثبات هوية الجهة أو ملكية الحساب من الصورة وحدها. " +
+    "يتطلب التحقق النهائي الرجوع إلى سجلات رسمية أو قنوات مستقلة.";
+
+  if (b.licenseClaim || b.licenses.length) {
+    message =
+      "تم رصد معلومات عن ترخيص تجاري، لكن لم يتم الاستعلام عن الرخصة لدى الجهة المختصة. " +
+      "لا يمكن حالياً تأكيد صلاحيتها أو ارتباط الحساب التجاري بها.";
   }
 
-  data.links.forEach(link => {
-    const item = node("div", "", "item");
-    item.append(node("strong", link.raw));
-    item.append(node(
+  target.append(node("div",message,"notice"));
+
+  if (b.emirates.length) {
+    target.append(node(
       "div",
-      "النطاق الفعلي: " + (link.host || "غير معروف"),
-      "muted"
+      "الإمارات المذكورة في المحتوى: " +
+      b.emirates.join("، ") +
+      ". يمكن استخدام الجهات الاقتصادية الرسمية المناسبة للتحقق لاحقاً.",
+      "item"
     ));
+  }
 
-    link.notes.forEach(note => {
-      item.append(node("div", "• " + note, "muted"));
-    });
+  target.append(node(
+    "div",
+    "التوصية: لا تحول أموالاً أو تشارك بيانات حساسة قبل التأكد من الجهة عبر مصدر رسمي مستقل.",
+    "info"
+  ));
+}
 
-    linkArea.append(item);
-  });
-
-  showItems("phones", data.phones, "لم يُكتشف رقم هاتف.");
-
+function renderReferences() {
   const refs = $("references");
   refs.replaceChildren();
 
   officialSites.forEach(site => {
-    const line = node("div", "", "item");
-    line.append(node("span", site.name + " — "));
+    const line = node("div","","item");
+    line.append(node("span",site.name + " — "));
 
     const a = document.createElement("a");
     a.href = "https://" + site.domain + "/";
@@ -555,25 +881,103 @@ function renderAnalysis(text) {
     line.append(a);
     refs.append(line);
   });
+}
+
+function renderAnalysis(text) {
+  if (!text.trim()) {
+    status("لا يوجد نص أو رمز واضح لتحليله.","error");
+    return;
+  }
+
+  const data = analyze(text);
+  const verdict = $("verdict");
+  verdict.replaceChildren();
+
+  const box = node("div","","risk " + data.level);
+  box.append(node("h3",data.title));
+
+  box.append(node(
+    "div",
+    data.level === "high"
+      ? "لا تشارك بيانات أو أموالاً قبل التحقق المستقل."
+      : "هذه نتيجة تحليل مؤشرات، وليست شهادة أمان أو ترخيص."
+  ));
+
+  verdict.append(box);
+
+  renderBusiness(data);
+  renderLicense(data);
+  renderContacts(data);
+
+  showItems(
+    "reasons",
+    data.reasons,
+    "لا توجد أسباب."
+  );
+
+  showItems(
+    "qrResults",
+    qrValues,
+    "لم يُكتشف رمز QR أو باركود قابل للقراءة."
+  );
+
+  const linkArea = $("links");
+  linkArea.replaceChildren();
+
+  if (!data.links.length) {
+    linkArea.append(node(
+      "div","لم يُكتشف رابط.","muted"
+    ));
+  }
+
+  data.links.forEach(link => {
+    const item = node("div","","item");
+
+    item.append(node("strong",link.raw));
+    item.append(node(
+      "div",
+      "النطاق الفعلي: " + (link.host || "غير معروف"),
+      "muted"
+    ));
+
+    link.notes.forEach(note => {
+      item.append(node("div","• " + note,"muted"));
+    });
+
+    linkArea.append(item);
+  });
+
+  showItems(
+    "phones",
+    data.phones,
+    "لم يُكتشف رقم هاتف."
+  );
+
+  renderVerification(data);
+  renderReferences();
 
   $("result").classList.remove("hidden");
   $("result").scrollIntoView({
-    behavior: "smooth",
-    block: "start"
+    behavior:"smooth",
+    block:"start"
   });
 }
 
-function loadScript(url, check) {
+function loadScript(url,check) {
   if (check()) return Promise.resolve();
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve,reject) => {
     const script = document.createElement("script");
     script.src = url;
+
     script.onload = () => {
       if (check()) resolve();
       else reject(Error("تعذّر تشغيل المكتبة."));
     };
-    script.onerror = () => reject(Error("تعذّر تحميل المكتبة."));
+
+    script.onerror = () =>
+      reject(Error("تعذّر تحميل المكتبة."));
+
     document.head.append(script);
   });
 }
@@ -604,76 +1008,97 @@ function loadQR() {
   return QRPromise;
 }
 
-async function decodeQR(image) {
+function loadImageFromFile(file) {
+  return new Promise((resolve,reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(Error("تعذّر فتح الصورة."));
+    };
+
+    image.src = url;
+  });
+}
+
+async function decodeQR(file) {
   const values = [];
-  const bitmap = await createImageBitmap(image);
+  const image = await loadImageFromFile(file);
 
-  try {
-    const scale = Math.min(
-      1,
-      1800 / Math.max(bitmap.width, bitmap.height)
-    );
+  const scale = Math.min(
+    1,
+    1800 / Math.max(image.naturalWidth,image.naturalHeight)
+  );
 
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(
+    1,Math.round(image.naturalWidth * scale)
+  );
+  canvas.height = Math.max(
+    1,Math.round(image.naturalHeight * scale)
+  );
 
-    const context = canvas.getContext(
-      "2d", { willReadFrequently: true }
-    );
+  const context = canvas.getContext(
+    "2d",{willReadFrequently:true}
+  );
 
-    context.drawImage(
-      bitmap, 0, 0, canvas.width, canvas.height
-    );
+  if (!context) throw Error("تعذّر إنشاء مساحة قراءة.");
 
-    if ("BarcodeDetector" in window) {
-      try {
-        const supported =
-          await BarcodeDetector.getSupportedFormats();
+  context.drawImage(
+    image,0,0,canvas.width,canvas.height
+  );
 
-        const formats = [
-          "qr_code", "ean_13", "ean_8", "code_128"
-        ].filter(format => supported.includes(format));
+  if ("BarcodeDetector" in window) {
+    try {
+      const supported =
+        await BarcodeDetector.getSupportedFormats();
 
-        if (formats.length) {
-          const detector = new BarcodeDetector({ formats });
-          const found = await detector.detect(canvas);
+      const formats = [
+        "qr_code","ean_13","ean_8","code_128"
+      ].filter(format => supported.includes(format));
 
-          found.forEach(item => {
-            if (item.rawValue) values.push(item.rawValue);
-          });
-        }
-      } catch {}
-    }
+      if (formats.length) {
+        const detector = new BarcodeDetector({formats});
+        const found = await detector.detect(canvas);
 
-    if (!values.length) {
-      await loadQR();
-
-      const pixels = context.getImageData(
-        0, 0, canvas.width, canvas.height
-      );
-
-      const found = window.jsQR(
-        pixels.data,
-        canvas.width,
-        canvas.height,
-        { inversionAttempts: "attemptBoth" }
-      );
-
-      if (found?.data) values.push(found.data);
-    }
-  } finally {
-    bitmap.close();
+        found.forEach(item => {
+          if (item.rawValue) values.push(item.rawValue);
+        });
+      }
+    } catch {}
   }
 
-  return [...new Set(values)];
+  if (!values.length) {
+    await loadQR();
+
+    const pixels = context.getImageData(
+      0,0,canvas.width,canvas.height
+    );
+
+    const found = window.jsQR(
+      pixels.data,
+      canvas.width,
+      canvas.height,
+      {inversionAttempts:"attemptBoth"}
+    );
+
+    if (found?.data) values.push(found.data);
+  }
+
+  return unique(values);
 }
 
 $("scanImage").onclick = async () => {
   if (working) return;
 
   if (!selectedFile) {
-    status("أضف صورة أولاً.", "error");
+    status("أضف صورة أولاً.","error");
     return;
   }
 
@@ -685,6 +1110,7 @@ $("scanImage").onclick = async () => {
 
   const image = selectedFile;
   const currentOperation = operation;
+
   let text = "";
   let qrError = null;
   let ocrError = null;
@@ -695,11 +1121,11 @@ $("scanImage").onclick = async () => {
 
     try {
       foundQR = await decodeQR(image);
-    } catch (error) {
+    } catch(error) {
       qrError = error;
     }
 
-    status("جارٍ قراءة النصوص العربية والإنجليزية...");
+    status("جارٍ استخراج البيانات من الصورة...");
 
     try {
       await loadOCR();
@@ -708,7 +1134,12 @@ $("scanImage").onclick = async () => {
         image,
         "ara+eng",
         {
-          logger: event => {
+          logger:event => {
+            if (
+              operation !== currentOperation ||
+              selectedFile !== image
+            ) return;
+
             if (event.status === "recognizing text") {
               const percent = Math.round(
                 (event.progress || 0) * 100
@@ -722,7 +1153,7 @@ $("scanImage").onclick = async () => {
       );
 
       text = (result.data?.text || "").trim();
-    } catch (error) {
+    } catch(error) {
       ocrError = error;
     }
 
@@ -730,7 +1161,6 @@ $("scanImage").onclick = async () => {
       operation !== currentOperation ||
       selectedFile !== image
     ) {
-      status("تغيرت الصورة أثناء الفحص. أعد المحاولة.");
       return;
     }
 
@@ -738,7 +1168,7 @@ $("scanImage").onclick = async () => {
 
     const parts = [];
 
-    if (text.replace(/\s/g, "").length >= 4) {
+    if (text.replace(/\s/g,"").length >= 4) {
       parts.push(text);
     }
 
@@ -757,16 +1187,22 @@ $("scanImage").onclick = async () => {
     }
 
     $("textInput").value = combined;
+
     renderAnalysis(combined);
 
     if (qrError || ocrError) {
       status(
-        "ظهر التحليل من البيانات المقروءة، لكن إحدى طرق القراءة تعذّرت. راجع النتيجة.",
+        "اكتمل التحليل من البيانات المتاحة، لكن إحدى طرق القراءة تعذّرت.",
         "error"
       );
     } else {
-      status("اكتمل الفحص الاسترشادي.", "ok");
+      status("اكتمل الفحص الشامل الاسترشادي.","ok");
     }
+  } catch(error) {
+    status(
+      "حدث خطأ أثناء الفحص. حاول مرة أخرى.",
+      "error"
+    );
   } finally {
     working = false;
     $("scanImage").disabled = false;
@@ -789,10 +1225,20 @@ const demos = {
     "لتأكيد الهوية عبر https://adpolice.gov.ae.fake-login.com",
 
   demoNormal:
-    "مرحباً، تم تأكيد موعدك غداً الساعة العاشرة صباحاً."
+    "مرحباً، تم تأكيد موعدك غداً الساعة العاشرة صباحاً.",
+
+  demoBusiness:
+    "اسم المتجر: متجر الخليج للتجارة\n" +
+    "الإمارة: دبي\n" +
+    "حساب إنستغرام: @gulf_store_demo\n" +
+    "مرخص من دائرة التنمية الاقتصادية\n" +
+    "رقم الرخصة: 123456\n" +
+    "للطلب واتساب: +971501234567\n" +
+    "الموقع: https://gulf-store-demo.example.com\n" +
+    "عرض خاص اليوم فقط. حول المبلغ لتأكيد الطلب."
 };
 
-Object.entries(demos).forEach(([id, value]) => {
+Object.entries(demos).forEach(([id,value]) => {
   $(id).onclick = () => {
     qrValues = [];
     $("textInput").value = value;
@@ -821,7 +1267,7 @@ function resetAll() {
 
 $("reset").onclick = resetAll;
 
-window.addEventListener("pagehide", () => {
+window.addEventListener("pagehide",() => {
   if (previewURL) URL.revokeObjectURL(previewURL);
 });
 </script>
